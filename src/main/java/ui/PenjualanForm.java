@@ -58,10 +58,7 @@ public class PenjualanForm extends JPanel {
     }
 
     private void initComponents() {
-        JLabel lblTitle = new JLabel("Transaksi Penjualan");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
-        add(lblTitle, BorderLayout.NORTH);
+
 
         // --- Panel Kiri: Input Keranjang ---
         RoundedPanel panelInput = ThemeUtil.createCardPanel();
@@ -182,13 +179,18 @@ public class PenjualanForm extends JPanel {
         // Events
         btnTambah.addActionListener(e -> tambahKeKeranjang());
         btnClear.addActionListener(e -> clearForm());
+
+        txtQty.addActionListener(e -> btnTambah.doClick());
+        txtBayar.addActionListener(e -> {
+            hitungKembali();
+            btnSimpan.doClick();
+        });
         btnSimpan.addActionListener(e -> simpanTransaksi());
 
-        txtBayar.addActionListener(e -> hitungKembali());
-        txtBayar.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                hitungKembali();
-            }
+        txtBayar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { hitungKembali(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { hitungKembali(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { hitungKembali(); }
         });
     }
 
@@ -218,8 +220,7 @@ public class PenjualanForm extends JPanel {
     }
 
     private void clearForm() {
-        // Just use a random number or timestamp for faktur for now, or rely on service.
-        txtIdTrans.setText("INV" + System.currentTimeMillis() % 1000000); 
+        txtIdTrans.setText(penjualanService.getPreviewNoFaktur()); 
         txtQty.setText("");
         txtTotal.setText("0");
         txtBayar.setText("");
@@ -336,6 +337,29 @@ public class PenjualanForm extends JPanel {
 
             if (penjualanService.simpanTransaksi(p)) {
                 Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Transaksi Berhasil Disimpan!");
+                
+                int confirm = JOptionPane.showConfirmDialog(this, "Apakah Anda ingin melihat pratinjau dan menyimpan faktur?", "Cetak Faktur", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    service.LogTransaksiService logService = new service.LogTransaksiService();
+                    java.util.Map<String, Object> header = logService.getTransactionHeader(p.getNoFaktur());
+                    java.util.List<java.util.Map<String, Object>> details = logService.getTransactionDetails(p.getNoFaktur());
+                    if (header != null && !details.isEmpty()) {
+                        try {
+                            util.ReceiptPrinter printer = new util.ReceiptPrinter(header, details);
+                            java.awt.image.BufferedImage img = util.PdfGenerator.createReceiptImage(printer, details.size());
+                            java.io.File pdfFile = util.PdfGenerator.saveAsPdf(img, p.getNoFaktur());
+                            
+                            InvoicePreviewDialog dialog = new InvoicePreviewDialog((JFrame) SwingUtilities.getWindowAncestor(this), img, pdfFile, printer);
+                            dialog.setVisible(true);
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(this, "Gagal membuat PDF: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                            ex.printStackTrace();
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Data transaksi untuk cetak tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+                
                 clearForm();
                 loadCombo(); // refresh stok combo
             } else {

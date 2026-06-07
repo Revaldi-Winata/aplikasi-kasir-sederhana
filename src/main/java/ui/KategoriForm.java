@@ -33,10 +33,7 @@ public class KategoriForm extends JPanel {
     }
 
     private void initComponents() {
-        JLabel lblTitle = new JLabel("Manajemen Kategori");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
-        add(lblTitle, BorderLayout.NORTH);
+
 
         RoundedPanel panelTop = ThemeUtil.createCardPanel();
         panelTop.setLayout(new BorderLayout(10, 10));
@@ -84,7 +81,7 @@ public class KategoriForm extends JPanel {
         panelBtn.add(btnHapus);
         panelBtn.add(btnClear);
 
-        panelTop.add(panelInput, BorderLayout.CENTER);
+        panelTop.add(panelInput, BorderLayout.WEST);
         panelTop.add(panelBtn, BorderLayout.SOUTH);
         
         add(panelTop, BorderLayout.NORTH);
@@ -109,6 +106,11 @@ public class KategoriForm extends JPanel {
         btnUbah.addActionListener(e -> ubahData());
         btnHapus.addActionListener(e -> hapusData());
         btnClear.addActionListener(e -> clear());
+
+        txtNama.addActionListener(e -> {
+            if (table.getSelectedRow() >= 0) btnUbah.doClick();
+            else btnSimpan.doClick();
+        });
 
         table.addMouseListener(new MouseAdapter() {
             @Override

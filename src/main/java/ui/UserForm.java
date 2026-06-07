@@ -10,6 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
 import ui.components.RoundedPanel;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -35,10 +36,7 @@ public class UserForm extends JPanel {
     }
 
     private void initComponents() {
-        JLabel lblTitle = new JLabel("Manajemen User");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
-        add(lblTitle, BorderLayout.NORTH);
+
 
         RoundedPanel panelTop = ThemeUtil.createCardPanel();
         panelTop.setLayout(new BorderLayout(10, 10));
@@ -90,7 +88,7 @@ public class UserForm extends JPanel {
 
         panelBtn.add(btnSimpan); panelBtn.add(btnUbah); panelBtn.add(btnHapus); panelBtn.add(btnClear);
 
-        panelTop.add(panelInput, BorderLayout.CENTER);
+        panelTop.add(panelInput, BorderLayout.WEST);
         panelTop.add(panelBtn, BorderLayout.SOUTH);
         
         add(panelTop, BorderLayout.NORTH);
@@ -113,6 +111,14 @@ public class UserForm extends JPanel {
         btnUbah.addActionListener(e -> ubahData());
         btnHapus.addActionListener(e -> hapusData());
         btnClear.addActionListener(e -> clear());
+
+        ActionListener enterSubmit = e -> {
+            if (table.getSelectedRow() >= 0) btnUbah.doClick();
+            else btnSimpan.doClick();
+        };
+        txtUsername.addActionListener(enterSubmit);
+        txtPassword.addActionListener(enterSubmit);
+        txtNamaLengkap.addActionListener(enterSubmit);
 
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {

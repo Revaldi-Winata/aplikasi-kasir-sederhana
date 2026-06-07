@@ -137,6 +137,7 @@ public class ThemeUtil {
         table.setFont(FONT_REGULAR);
         table.setForeground(TEXT_PRIMARY);
         table.setRowHeight(35);
+        table.setPreferredScrollableViewportSize(new Dimension(table.getPreferredSize().width, 35 * 10));
         table.setShowGrid(false);
         table.setShowHorizontalLines(true);
         table.setGridColor(new Color(226, 232, 240)); // Slate-200
@@ -192,8 +193,28 @@ public class ThemeUtil {
             }
         });
 
-        // ScrollPane (remove standard border for cleaner look)
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(BG_WHITE);
+    }
+
+    /**
+     * Loads an image from resources and scales it smoothly.
+     */
+    public static ImageIcon getScaledImage(String resourcePath, int width, int height) {
+        try {
+            java.net.URL imgURL = ThemeUtil.class.getResource(resourcePath);
+            if (imgURL != null) {
+                ImageIcon icon = new ImageIcon(imgURL);
+                Image img = icon.getImage();
+                Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                return new ImageIcon(scaledImg);
+            } else {
+                System.err.println("Couldn't find file: " + resourcePath);
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

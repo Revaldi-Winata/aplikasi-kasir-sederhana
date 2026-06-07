@@ -50,9 +50,9 @@ public class Toast extends JWindow {
         JLabel iconLabel = new JLabel();
         iconLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         iconLabel.setForeground(Color.WHITE);
-        if (type == SUCCESS) iconLabel.setText("✓");
-        else if (type == ERROR) iconLabel.setText("✕");
-        else iconLabel.setText("i");
+        if (type == SUCCESS) iconLabel.setText(" OK ");
+        else if (type == ERROR) iconLabel.setText(" X ");
+        else iconLabel.setText(" i ");
         
         JLabel lblMessage = new JLabel("<html><body style='width: 200px;'>" + message + "</body></html>");
         lblMessage.setFont(ThemeUtil.FONT_REGULAR);

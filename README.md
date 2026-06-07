@@ -1,127 +1,177 @@
 <div align="center">
-  <h1>🛒 Toko Berkah Jaya - Point of Sales (POS)</h1>
-  <p>Aplikasi Desktop Kasir & Manajemen Inventaris Modern berbasis Java Swing</p>
+  <img src="https://i.postimg.cc/L8ZVLW7C/logo.png" alt="Logo Toko Berkah Jaya" width="150"/>
+  <p><i>*Catatan: Logo aplikasi ini dibuat menggunakan bantuan ChatGPT.</i></p>
+  <h1>Toko Berkah Jaya</h1>
+  <p>Aplikasi point-of-sale dan manajemen inventaris desktop yang dibangun dengan Java Swing.</p>
   
   [![Java](https://img.shields.io/badge/Java-17%2B-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
   [![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
   [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
+
+  <br>
+  <p><b><a href="README_EN.md">Read in English</a></b></p>
 </div>
 
 <br>
 
-## 📖 Tentang Proyek
+Toko Berkah Jaya menangani operasional toko harian. Sistem ini melacak inventaris, mengkategorikan produk, mendata pelanggan, dan memproses penjualan. Aplikasi ini juga mencakup manajemen pengguna dengan kontrol akses berbasis peran untuk administrator dan kasir.
 
-**Toko Berkah Jaya** adalah sistem *Point of Sales* (POS) dan manajemen inventaris yang dikembangkan sebagai proyek untuk mata kuliah **Pemrograman II**. Aplikasi ini dirancang untuk mempermudah operasional toko, mulai dari pendataan barang, kategori, hingga manajemen pelanggan dan karyawan (kasir). 
+## Fitur utama
 
-Aplikasi ini mengedepankan **User Experience (UX)** dengan antarmuka yang bersih (*clean*), rapi (*pixel-perfect alignment*), dan interaktif.
+- **Akses berbasis peran**: Administrator memiliki akses sistem penuh. Kasir hanya dapat mengakses area penjualan, dasbor, dan profil mereka sendiri.
+- **Pelacakan inventaris**: Tambah, perbarui, dan hapus produk. Sistem melacak tingkat stok dan kategori produk.
+- **Database pelanggan**: Simpan catatan informasi pelanggan tetap.
+- **Point of sale**: Proses transaksi, hitung total dengan pembuatan nomor faktur otomatis, dan cetak setruk sebagai file PDF.
+- **Log transaksi**: Pantau riwayat keseluruhan penjualan yang pernah terjadi.
+- **Profil pengguna**: Staf dapat memperbarui kata sandi dan nama pengguna mereka sendiri tanpa harus merepotkan administrator.
 
-## ✨ Fitur Utama
+## Tech stack
 
-- 🔐 **Sistem Multi-Role Otentikasi**:
-  - **Admin**: Akses penuh ke seluruh fitur (Manajemen Kategori, Barang, Customer, User).
-  - **Kasir**: Akses terbatas pada operasional kasir, dashboard, dan pengaturan profil mandiri.
-- 📦 **Manajemen Inventaris**: CRUD (Create, Read, Update, Delete) data Barang beserta Kategori, Harga, Satuan, dan Stok.
-- 👥 **Manajemen Relasi (CRM)**: Pendataan Customer/Pelanggan secara terstruktur.
-- ⚙️ **Pengaturan Karyawan**: Manajemen User (Admin/Kasir) untuk mengontrol siapa saja yang bisa masuk ke dalam sistem.
-- 👤 **Profil Saya**: Fitur bagi pengguna yang sedang login untuk memperbarui data diri secara mandiri tanpa harus ke Admin.
-- 🎨 **Modern & Consistent UI**: Desain form dengan rata kiri (*left-aligned*) yang presisi di semua halaman, warna *soft*, dan state tombol yang dinamis (mengunci tombol simpan/ubah secara otomatis untuk mencegah error).
-- ⚡ **Smart ID Generation**: ID data di-generate otomatis dari *auto-increment* database dan ditampilkan langsung ke pengguna secara *real-time* saat pengisian form.
-
-## 🛠️ Teknologi yang Digunakan
-
-- **Bahasa Pemrograman**: Java (JDK 17 atau lebih baru disarankan)
-- **GUI Framework**: Java Swing & AWT
+- **Bahasa**: Java (JDK 17+)
+- **GUI framework**: Java Swing dan AWT
 - **Database**: MySQL
-- **Build Tool / Dependency**: Apache Maven
-- **Driver Database**: MySQL Connector/J
+- **Build tool**: Apache Maven
+- **Pembuatan PDF**: Apache PDFBox
 
----
+## Persyaratan sistem
 
-## 📸 Pratinjau Aplikasi (Screenshots)
+- Java Development Kit (JDK) 17 atau lebih baru
+- Server MySQL (melalui XAMPP, WAMP, atau mandiri)
+- IDE seperti NetBeans atau IntelliJ IDEA (untuk mode pengembangan)
 
-| Halaman Login | Halaman Utama (Beranda) |
-|:---:|:---:|
-| ![Login](https://i.postimg.cc/PfQWmXSn/image.png) | ![Beranda](https://i.postimg.cc/3rty8dLG/image.png) |
+## Instalasi untuk Pengembangan (Development Setup)
 
-| Manajemen Kategori | Manajemen Barang |
-|:---:|:---:|
-| ![Kategori](https://i.postimg.cc/Hsfkn5bQ/image.png) | ![Barang](https://i.postimg.cc/WzcPjmB2/image.png) |
+Gunakan langkah ini jika Anda ingin melihat kode sumber, mengubah fitur, atau menjalankan aplikasi dari IDE.
 
-| Manajemen Customer | Kasir (Transaksi Penjualan) |
-|:---:|:---:|
-| ![Customer](https://i.postimg.cc/RZDy4Qf9/image.png) | ![Penjualan](https://i.postimg.cc/HsWhMP4N/image.png) |
+### 1. Clone repositori
 
-| Manajemen User | Profil Saya |
-|:---:|:---:|
-| ![User](https://i.postimg.cc/0NSWxgPn/image.png) | ![Profil](https://i.postimg.cc/rsfggMCb/image.png) |
-
----
-
-## 🚀 Panduan Instalasi & Setup
-
-Berikut adalah panduan lengkap untuk menginstal dan menjalankan aplikasi ini, bahkan di komputer (device) yang baru pertama kali digunakan.
-
-### 1. Persiapan Kebutuhan Sistem (Prerequisites)
-Pastikan komputer Anda sudah terinstal perangkat lunak berikut:
-1. **Java Development Kit (JDK)**: Minimal versi 8, disarankan versi 17+. ([Download JDK](https://adoptium.net/))
-2. **XAMPP** (atau aplikasi sejenis seperti WAMP/Laragon) untuk menjalankan server database MySQL lokal. ([Download XAMPP](https://www.apachefriends.org/download.html))
-3. **IDE Java** (Pilihan): NetBeans (Disarankan), IntelliJ IDEA, atau Eclipse.
-
-### 2. Setup Database
-Agar aplikasi dapat menyimpan data, Anda harus menyiapkan database MySQL:
-1. Buka aplikasi **XAMPP Control Panel** dan klik tombol **Start** pada modul **Apache** dan **MySQL**.
-2. Buka browser dan akses [http://localhost/phpmyadmin](http://localhost/phpmyadmin).
-3. Buat database baru:
-   - Klik **Baru (New)** di panel sebelah kiri.
-   - Masukkan nama basis data: `tokoberkahjaya`.
-   - Klik **Buat (Create)**.
-4. Temukan file `tokoberkahjaya.sql` yang terletak di dalam folder `database/` di dalam *repository* ini.
-5. Di phpMyAdmin, klik tab **Import**, pilih file tersebut, lalu klik **Go** untuk meng-import struktur tabel (dan data awal) secara otomatis.
-
-### 3. Clone Repository
-Buka Terminal / Command Prompt dan jalankan perintah berikut untuk mengunduh kode (atau klik tombol **Download ZIP** di GitHub):
 ```bash
-git clone https://github.com/username-anda/TokoBerkahJaya.git
+git clone https://github.com/username/TokoBerkahJaya.git
+cd TokoBerkahJaya
 ```
 
-### 4. Konfigurasi Koneksi Database di Kode
-Jika Anda menggunakan *password* pada root MySQL lokal Anda, Anda harus mengubahnya di dalam kode:
-1. Buka folder *project* di IDE Anda (misal: NetBeans).
-2. Cari file `Koneksi.java` di dalam *package* `database` (`src/main/java/database/Koneksi.java`).
-3. Sesuaikan dengan kredensial MySQL Anda:
-   ```java
-   private static final String URL = "jdbc:mysql://localhost:3306/tokoberkahjaya";
-   private static final String USER = "root";       // Username MySQL (Default XAMPP: root)
-   private static final String PASSWORD = "";       // Password MySQL (Default XAMPP: kosong)
-   ```
+### 2. Siapkan database
 
-### 5. Compile & Run (Menjalankan Aplikasi)
-- **Menggunakan NetBeans**:
-  - Klik kanan pada *project* **TokoBerkahJaya** di tab *Projects*.
-  - Pilih **Clean and Build** untuk mengunduh *dependencies* Maven dan meng-compile kode.
-  - Cari file kelas yang memiliki method `main` (misalnya `LoginForm.java` atau `Main.java` di package UI), klik kanan lalu pilih **Run File** (atau `Shift+F6`).
+1. Jalankan server MySQL Anda melalui XAMPP atau layanan lokal lainnya.
+2. Buat database baru bernama `tokoberkahjaya`.
+3. Impor skema dan data awal. Anda dapat melakukan ini melalui antarmuka phpMyAdmin atau langsung dari baris perintah:
 
----
+```bash
+mysql -u root -p tokoberkahjaya < database/tokoberkahjaya.sql
+```
 
-## 📦 Panduan Distribusi (Membuat file .JAR untuk User)
+### 3. Konfigurasi koneksi
 
-Jika Anda ingin memberikan aplikasi ini ke komputer kasir atau pengguna lain **tanpa perlu menginstal NetBeans**, Anda dapat membungkusnya menjadi file `.jar`.
+Aplikasi terhubung ke MySQL menggunakan kredensial yang ditentukan di `src/main/java/database/Koneksi.java`. Jika pengaturan MySQL lokal Anda menggunakan kata sandi, perbarui baris ini:
 
-1. Di NetBeans, pastikan Anda sudah melakukan **Clean and Build**.
-2. Buka folder project Anda melalui File Explorer (`TokoBerkahJaya\target`).
-3. Anda akan menemukan file berekstensi `.jar` (misalnya `TokoBerkahJaya-1.0-SNAPSHOT.jar` atau file berakhiran `-jar-with-dependencies.jar`).
-4. **Cara Penggunaan di Komputer Tujuan**:
-   - Pindahkan file `.jar` tersebut ke komputer tujuan.
-   - **SYARAT**: Komputer tujuan **WAJIB** terinstal Java (JRE) dan XAMPP (dengan database `tokoberkahjaya` yang sudah ter-import dan menyala).
-   - Klik ganda (double-click) pada file `.jar` tersebut, atau jalankan via CMD:
-     ```bash
-     java -jar NamaFileAplikasi.jar
-     ```
+```java
+private static final String URL = "jdbc:mysql://localhost:3306/tokoberkahjaya";
+private static final String USER = "root";
+private static final String PASSWORD = ""; // Tambahkan kata sandi Anda di sini
+```
 
----
+### 4. Build dan jalankan
 
+Buka proyek di NetBeans, klik kanan nama proyek, dan pilih **Clean and Build**. Setelah proses selesai, jalankan (Run) proyek.
 
+Sebagai alternatif, jika Anda menggunakan terminal dan Maven:
 
-<div align="center">
-  <p>Dibuat dengan ❤️ untuk proyek Pemrograman II</p>
-</div>
+```bash
+mvn clean package
+java -cp target/classes;target/dependency/* ui.LoginForm
+```
+
+## Instalasi untuk Penggunaan Nyata (Production Deployment)
+
+Ikuti langkah ini jika Anda bersiap untuk mendistribusikan aplikasi dan memasangnya langsung di komputer toko (kasir). Komputer target tidak memerlukan *source code* atau aplikasi IDE.
+
+### 1. Bangun file eksekutabel (JAR)
+
+Di komputer pengembangan Anda (komputer yang ada kode sumbernya), jalankan perintah Maven berikut untuk membungkus aplikasi dan semua dependensinya ke dalam satu file JAR portabel:
+
+```bash
+mvn clean package
+```
+
+Ini akan menghasilkan file `TokoBerkahJaya-1.0-SNAPSHOT-jar-with-dependencies.jar` di dalam direktori `target/`. 
+
+### 2. Persiapan komputer kasir
+
+Pindahkan file JAR tersebut ke komputer kasir menggunakan flashdisk atau media lainnya (misalnya ke `D:\AplikasiToko\`). Pastikan komputer kasir telah diinstal:
+- **Java Runtime Environment (JRE) 17** atau yang lebih baru.
+- **XAMPP** (sebagai server lokal MySQL).
+
+### 3. Setup database produksi
+
+1. Di komputer kasir, jalankan XAMPP (Apache dan MySQL).
+2. Akses `http://localhost/phpmyadmin` dan buat database `tokoberkahjaya`.
+3. Impor file `tokoberkahjaya.sql`. 
+4. Jika Anda benar-benar memulai dari nol untuk produksi, hapus data (*truncate*) pada tabel riwayat transaksi (`tb_penjualan` dan `tb_detail_penjualan`), namun Anda dapat membiarkan data master barang jika diperlukan.
+5. Demi keamanan, atur kata sandi *root* pada MySQL, lalu pastikan Anda juga mengubah *password* pada `Koneksi.java` (sebelum di-build jadi JAR).
+
+### 4. Buat shortcut aplikasi
+
+Untuk memudahkan kasir membuka aplikasi:
+1. Klik kanan pada file JAR, pilih **Send to > Desktop (create shortcut)**.
+2. Di desktop, ganti nama *shortcut* menjadi "Toko Berkah Jaya".
+3. *(Opsional)* Klik kanan *shortcut* > **Properties**, Anda dapat mengubah ikon dengan ikon khusus agar terlihat lebih profesional.
+4. Anda dapat mengatur targetnya menjadi `javaw -jar "D:\AplikasiToko\TokoBerkahJaya-1.0-SNAPSHOT-jar-with-dependencies.jar"` agar jendela *command prompt* hitam di latar belakang tidak ikut muncul.
+
+### 5. Pengamanan akun
+
+Saat pertama kali masuk ke aplikasi kasir, gunakan akun Administrator awal (yang ada di *database dump*). Segera buat akun baru untuk karyawan/kasir, lalu ubah atau hapus akun *default* demi menghindari penyalahgunaan wewenang.
+
+## Arsitektur
+
+Aplikasi mengikuti pola standar Model-View-Service.
+
+### Struktur direktori
+
+```
+├── database/            # Dump SQL untuk pengaturan database
+├── invoices/            # Setruk PDF yang dihasilkan disimpan di sini
+├── src/main/java/
+│   ├── database/        # Konfigurasi koneksi database
+│   ├── model/           # Objek transfer data (User, Barang, Penjualan)
+│   ├── service/         # Logika bisnis dan query database
+│   ├── ui/              # Form dan panel Swing
+│   │   └── components/  # Elemen UI kustom yang dapat digunakan kembali
+│   └── util/            # Pembantu pemformatan dan pembuatan PDF
+└── pom.xml              # Dependensi Maven dan konfigurasi build
+```
+
+### Alur data
+
+1. Pengguna berinteraksi dengan form Swing di paket `ui`.
+2. Form mengumpulkan data dan meneruskannya ke kelas yang sesuai di paket `service`.
+3. Kelas service meminta koneksi dari `database.Koneksi`.
+4. Kelas service mengeksekusi query SQL terhadap database MySQL.
+5. Data kembali sebagai objek `ResultSet`, dipetakan ke kelas `model`, dan kembali ke UI untuk ditampilkan secara visual.
+
+## Tangkapan layar
+
+| Layar login | Dasbor utama |
+|:---:|:---:|
+| ![Login](https://i.postimg.cc/0y88wgrV/image.png) | ![Beranda](https://i.postimg.cc/1zXsvpGd/image.png) |
+
+| Manajemen kategori | Manajemen barang |
+|:---:|:---:|
+| ![Kategori](https://i.postimg.cc/gjFpcQfZ/image.png) | ![Barang](https://i.postimg.cc/PJWjCKj0/image.png) |
+
+| Manajemen pelanggan | Point of sale (Kasir) |
+|:---:|:---:|
+| ![Customer](https://i.postimg.cc/bwNhvQFK/image.png) | ![Penjualan](https://i.postimg.cc/1z81GySH/image.png) |
+
+| Log transaksi | Manajemen pengguna |
+|:---:|:---:|
+| ![Log](https://i.postimg.cc/VvBxf696/image.png) | ![User](https://i.postimg.cc/TY0zBKYD/image.png) |
+
+| Profil saya | |
+|:---:|:---:|
+| ![Profil](https://i.postimg.cc/P5qgHdP9/image.png) | |
+
+## Kredit
+
+Aplikasi ini dikembangkan oleh:
+- **Revaldi Winata**
+- Program Studi Teknik Informatika, Fakultas Ilmu Komputer, Universitas Pamulang.

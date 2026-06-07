@@ -12,13 +12,14 @@ import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
 import ui.components.RoundedPanel;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class BarangForm extends JPanel {
 
-    private JTextField txtId, txtNama, txtHargaBeli, txtHargaJual, txtStok;
+    private JTextField txtId, txtNama, txtSatuan, txtHargaJual, txtStok;
     private JComboBox<String> cbKategori;
     private JButton btnSimpan, btnUbah, btnHapus, btnClear;
     private JTable table;
@@ -43,10 +44,7 @@ public class BarangForm extends JPanel {
     }
 
     private void initComponents() {
-        JLabel lblTitle = new JLabel("Manajemen Barang");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
-        add(lblTitle, BorderLayout.NORTH);
+
 
         RoundedPanel panelTop = ThemeUtil.createCardPanel();
         panelTop.setLayout(new BorderLayout(10, 10));
@@ -70,9 +68,9 @@ public class BarangForm extends JPanel {
         cbKategori = new JComboBox<>(); ThemeUtil.styleComboBox(cbKategori);
         gbc.gridx = 1; panelInput.add(cbKategori, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 3; addLabel(panelInput, "Harga Beli:", gbc);
-        txtHargaBeli = new JTextField(20); ThemeUtil.styleTextField(txtHargaBeli);
-        gbc.gridx = 1; panelInput.add(txtHargaBeli, gbc);
+        gbc.gridx = 0; gbc.gridy = 3; addLabel(panelInput, "Satuan:", gbc);
+        txtSatuan = new JTextField(20); ThemeUtil.styleTextField(txtSatuan);
+        gbc.gridx = 1; panelInput.add(txtSatuan, gbc);
 
         gbc.gridx = 0; gbc.gridy = 4; addLabel(panelInput, "Harga Jual:", gbc);
         txtHargaJual = new JTextField(20); ThemeUtil.styleTextField(txtHargaJual);
@@ -91,7 +89,7 @@ public class BarangForm extends JPanel {
 
         panelBtn.add(btnSimpan); panelBtn.add(btnUbah); panelBtn.add(btnHapus); panelBtn.add(btnClear);
 
-        panelTop.add(panelInput, BorderLayout.CENTER);
+        panelTop.add(panelInput, BorderLayout.WEST);
         panelTop.add(panelBtn, BorderLayout.SOUTH);
         
         add(panelTop, BorderLayout.NORTH);
@@ -99,7 +97,7 @@ public class BarangForm extends JPanel {
         RoundedPanel panelBottom = ThemeUtil.createCardPanel();
         panelBottom.setLayout(new BorderLayout());
 
-        tableModel = new DefaultTableModel(new String[]{"ID Barang", "Nama Barang", "Kategori", "Harga Beli", "Harga Jual", "Stok"}, 0) {
+        tableModel = new DefaultTableModel(new String[]{"ID Barang", "Nama Barang", "Kategori", "Satuan", "Harga Jual", "Stok"}, 0) {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         table = new JTable(tableModel);
@@ -115,6 +113,15 @@ public class BarangForm extends JPanel {
         btnHapus.addActionListener(e -> hapusData());
         btnClear.addActionListener(e -> clear());
 
+        ActionListener enterSubmit = e -> {
+            if (table.getSelectedRow() >= 0) btnUbah.doClick();
+            else btnSimpan.doClick();
+        };
+        txtNama.addActionListener(enterSubmit);
+        txtSatuan.addActionListener(enterSubmit);
+        txtHargaJual.addActionListener(enterSubmit);
+        txtStok.addActionListener(enterSubmit);
+
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int row = table.getSelectedRow();
@@ -123,7 +130,7 @@ public class BarangForm extends JPanel {
                     txtId.setEditable(false);
                     txtNama.setText(tableModel.getValueAt(row, 1).toString());
                     cbKategori.setSelectedItem(tableModel.getValueAt(row, 2).toString());
-                    txtHargaBeli.setText(tableModel.getValueAt(row, 3).toString().replace(".0", ""));
+                    txtSatuan.setText(tableModel.getValueAt(row, 3).toString());
                     txtHargaJual.setText(tableModel.getValueAt(row, 4).toString().replace(".0", ""));
                     txtStok.setText(tableModel.getValueAt(row, 5).toString());
                 }
@@ -159,7 +166,7 @@ public class BarangForm extends JPanel {
             }
             tableModel.addRow(new Object[]{
                 b.getIdBarang(), b.getNamaBarang(), namaKat, 
-                b.getHargaBeli(), b.getHargaJual(), b.getStok()
+                b.getSatuan(), b.getHargaJual(), b.getStok()
             });
         }
     }
@@ -168,7 +175,7 @@ public class BarangForm extends JPanel {
         txtId.setText(barangService.generateId());
         txtId.setEditable(false);
         txtNama.setText("");
-        txtHargaBeli.setText("");
+        txtSatuan.setText("");
         txtHargaJual.setText("");
         txtStok.setText("");
         if(cbKategori.getItemCount() > 0) cbKategori.setSelectedIndex(0);
@@ -186,7 +193,7 @@ public class BarangForm extends JPanel {
             b.setIdBarang(txtId.getText());
             b.setNamaBarang(txtNama.getText().trim());
             b.setIdKategori(listKategori.get(cbKategori.getSelectedIndex()).getIdKategori());
-            b.setHargaBeli(Double.parseDouble(txtHargaBeli.getText().trim()));
+            b.setSatuan(txtSatuan.getText().trim());
             b.setHargaJual(Double.parseDouble(txtHargaJual.getText().trim()));
             b.setStok(Integer.parseInt(txtStok.getText().trim()));
             
@@ -213,7 +220,7 @@ public class BarangForm extends JPanel {
             b.setIdBarang(txtId.getText());
             b.setNamaBarang(txtNama.getText().trim());
             b.setIdKategori(listKategori.get(cbKategori.getSelectedIndex()).getIdKategori());
-            b.setHargaBeli(Double.parseDouble(txtHargaBeli.getText().trim()));
+            b.setSatuan(txtSatuan.getText().trim());
             b.setHargaJual(Double.parseDouble(txtHargaJual.getText().trim()));
             b.setStok(Integer.parseInt(txtStok.getText().trim()));
             

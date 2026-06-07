@@ -9,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 import util.ThemeUtil;
 import ui.components.RoundedPanel;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class ProfilForm extends JPanel {
 
@@ -31,10 +32,7 @@ public class ProfilForm extends JPanel {
     }
 
     private void initComponents() {
-        JLabel lblTitle = new JLabel("Profil Saya");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
-        add(lblTitle, BorderLayout.NORTH);
+
 
         RoundedPanel panelTop = ThemeUtil.createCardPanel();
         panelTop.setLayout(new BorderLayout(10, 10));
@@ -77,6 +75,19 @@ public class ProfilForm extends JPanel {
         ThemeUtil.stylePasswordField(txtKonfirmasiPassword);
         gbc.gridx = 1; panelInput.add(txtKonfirmasiPassword, gbc);
 
+        gbc.gridx = 1; gbc.gridy = 5;
+        JCheckBox chkShowPassword = new JCheckBox("Tampilkan Password");
+        chkShowPassword.setOpaque(false);
+        chkShowPassword.setFont(ThemeUtil.FONT_REGULAR);
+        chkShowPassword.setForeground(ThemeUtil.TEXT_SECONDARY);
+        chkShowPassword.addItemListener(e -> {
+            char echoChar = chkShowPassword.isSelected() ? (char) 0 : '\u2022';
+            txtPasswordLama.setEchoChar(echoChar);
+            txtPasswordBaru.setEchoChar(echoChar);
+            txtKonfirmasiPassword.setEchoChar(echoChar);
+        });
+        panelInput.add(chkShowPassword, gbc);
+
         JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panelBtn.setOpaque(false);
         btnSimpan = new JButton("Update Profil"); 
@@ -84,7 +95,7 @@ public class ProfilForm extends JPanel {
 
         panelBtn.add(btnSimpan);
 
-        panelTop.add(panelInput, BorderLayout.CENTER);
+        panelTop.add(panelInput, BorderLayout.WEST);
         panelTop.add(panelBtn, BorderLayout.SOUTH);
         
         // Wrap with a flow layout so it doesn't stretch vertically too much
@@ -96,6 +107,12 @@ public class ProfilForm extends JPanel {
 
         // Events
         btnSimpan.addActionListener(e -> updateProfil());
+
+        ActionListener enterSubmit = e -> btnSimpan.doClick();
+        txtNamaLengkap.addActionListener(enterSubmit);
+        txtPasswordLama.addActionListener(enterSubmit);
+        txtPasswordBaru.addActionListener(enterSubmit);
+        txtKonfirmasiPassword.addActionListener(enterSubmit);
     }
 
     private void addLabel(JPanel p, String text, GridBagConstraints gbc) {

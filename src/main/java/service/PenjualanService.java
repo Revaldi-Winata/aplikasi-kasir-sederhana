@@ -46,7 +46,7 @@ public class PenjualanService {
             int idJual;
             try (PreparedStatement psHeader = conn.prepareStatement(sqlHeader, Statement.RETURN_GENERATED_KEYS)) {
                 psHeader.setString(1, noFaktur);
-                psHeader.setDate(2, new java.sql.Date(p.getTglTransaksi().getTime()));
+                psHeader.setTimestamp(2, new java.sql.Timestamp(p.getTglTransaksi().getTime()));
                 psHeader.setString(3, p.getIdCustomer());
                 psHeader.setDouble(4, p.getTotalBayar());
                 psHeader.setInt(5, p.getIdUser());
@@ -177,6 +177,15 @@ public class PenjualanService {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public String getPreviewNoFaktur() {
+        try (Connection conn = database.Koneksi.getKoneksi()) {
+            return generateNoFaktur(conn);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "FK-ERROR";
+        }
     }
 
     /**

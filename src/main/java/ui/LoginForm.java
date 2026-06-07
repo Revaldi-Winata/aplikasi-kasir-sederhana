@@ -28,6 +28,11 @@ public class LoginForm extends JFrame {
         setLocationRelativeTo(null);
         getContentPane().setBackground(ThemeUtil.BG_SOFT);
 
+        ImageIcon logoIcon = ThemeUtil.getScaledImage("/images/logo.png", 64, 64);
+        if (logoIcon != null) {
+            setIconImage(logoIcon.getImage());
+        }
+
         initComponents();
     }
 
@@ -36,10 +41,15 @@ public class LoginForm extends JFrame {
         container.setLayout(new GridBagLayout());
 
         RoundedPanel loginCard = ThemeUtil.createCardPanel();
-        loginCard.setPreferredSize(new Dimension(400, 350));
+        loginCard.setPreferredSize(new Dimension(400, 480));
         loginCard.setLayout(new BoxLayout(loginCard, BoxLayout.Y_AXIS));
 
-        // Judul
+        // Logo & Judul
+        JLabel lblLogo = new JLabel();
+        ImageIcon bigLogo = ThemeUtil.getScaledImage("/images/logo.png", 80, 80);
+        if (bigLogo != null) lblLogo.setIcon(bigLogo);
+        lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         JLabel lblTitle = new JLabel("Toko Berkah Jaya");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
@@ -81,7 +91,9 @@ public class LoginForm extends JFrame {
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Assemble
-        loginCard.add(Box.createRigidArea(new Dimension(0, 20)));
+        loginCard.add(Box.createRigidArea(new Dimension(0, 10)));
+        loginCard.add(lblLogo);
+        loginCard.add(Box.createRigidArea(new Dimension(0, 10)));
         loginCard.add(lblTitle);
         loginCard.add(Box.createRigidArea(new Dimension(0, 5)));
         loginCard.add(lblSub);
@@ -95,14 +107,10 @@ public class LoginForm extends JFrame {
 
         container.add(loginCard);
 
-        btnLogin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doLogin();
-            }
-        });
-        
-        txtPassword.addActionListener(e -> doLogin());
+        btnLogin.addActionListener(e -> doLogin());
+        txtUsername.addActionListener(e -> txtPassword.requestFocus());
+        txtPassword.addActionListener(e -> btnLogin.doClick());
+        getRootPane().setDefaultButton(btnLogin);
     }
 
     private void doLogin() {
