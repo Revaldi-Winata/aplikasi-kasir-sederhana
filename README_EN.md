@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://i.postimg.cc/L8ZVLW7C/logo.png" alt="Logo Toko Berkah Jaya" width="150"/>
-  <p><i>*Note: The application logo was created with the assistance of ChatGPT.</i></p>
-  <h1>Toko Berkah Jaya</h1>
+  <p><i>*Note: The logo of this application was created using ChatGPT.</i></p>
+  <h1>Simple Cashier Application (Toko Berkah Jaya POS)</h1>
   <p>A desktop point-of-sale and inventory management application built with Java Swing.</p>
   
   [![Java](https://img.shields.io/badge/Java-17%2B-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)

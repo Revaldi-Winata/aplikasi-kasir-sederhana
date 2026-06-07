@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://i.postimg.cc/L8ZVLW7C/logo.png" alt="Logo Toko Berkah Jaya" width="150"/>
   <p><i>*Catatan: Logo aplikasi ini dibuat menggunakan bantuan ChatGPT.</i></p>
-  <h1>Toko Berkah Jaya</h1>
+  <h1>Aplikasi Kasir Sederhana (Toko Berkah Jaya POS)</h1>
   <p>Aplikasi point-of-sale dan manajemen inventaris desktop yang dibangun dengan Java Swing.</p>
   
   [![Java](https://img.shields.io/badge/Java-17%2B-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
