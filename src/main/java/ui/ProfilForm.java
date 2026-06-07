@@ -2,164 +2,161 @@ package ui;
 
 import model.User;
 import service.UserService;
-import util.ThemeUtil;
+import ui.components.Toast;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import util.ThemeUtil;
+import ui.components.RoundedPanel;
 import java.awt.*;
 
 public class ProfilForm extends JPanel {
-    private JTextField txtUsername, txtNamaLengkap, txtLevel;
-    private JPasswordField txtPassword;
-    private JCheckBox chkShowPassword;
+
+    private JTextField txtUsername, txtNamaLengkap;
+    private JPasswordField txtPasswordLama, txtPasswordBaru, txtKonfirmasiPassword;
     private JButton btnSimpan;
-
+    private UserService service;
     private User currentUser;
-    private UserService userService;
-    private Runnable onProfileUpdated;
+    private Runnable onUpdate;
 
-    public ProfilForm(User user, Runnable onProfileUpdated) {
+    public ProfilForm(User user, Runnable onUpdate) {
         this.currentUser = user;
-        this.userService = new UserService();
-        this.onProfileUpdated = onProfileUpdated;
-
-        setLayout(new BorderLayout(10, 10));
+        this.onUpdate = onUpdate;
+        service = new UserService();
+        setLayout(new BorderLayout(20, 20));
         setBackground(ThemeUtil.BG_SOFT);
-        setBorder(new EmptyBorder(30, 30, 30, 30));
-
+        setBorder(new EmptyBorder(20, 30, 20, 30));
         initComponents();
         loadData();
     }
 
     private void initComponents() {
-        // Title
-        JLabel lblTitle = new JLabel("Manajemen Profil Saya");
+        JLabel lblTitle = new JLabel("Profil Saya");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.TEXT_PRIMARY);
-        lblTitle.setBorder(new EmptyBorder(0, 0, 20, 0));
+        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
         add(lblTitle, BorderLayout.NORTH);
+
+        RoundedPanel panelTop = ThemeUtil.createCardPanel();
+        panelTop.setLayout(new BorderLayout(10, 10));
 
         JPanel panelInput = new JPanel(new GridBagLayout());
         panelInput.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.insets = new Insets(8, 5, 8, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Level (Read Only)
         gbc.gridx = 0; gbc.gridy = 0;
-        JLabel lblLevel = new JLabel("Level Akses:");
-        lblLevel.setFont(ThemeUtil.FONT_REGULAR);
-        lblLevel.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblLevel, gbc);
-        txtLevel = new JTextField(20);
-        ThemeUtil.styleTextField(txtLevel);
-        txtLevel.setEditable(false);
-        gbc.gridx = 1;
-        panelInput.add(txtLevel, gbc);
-
-        // Username
-        gbc.gridx = 0; gbc.gridy = 1;
-        JLabel lblUser = new JLabel("Username:");
-        lblUser.setFont(ThemeUtil.FONT_REGULAR);
-        lblUser.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblUser, gbc);
+        addLabel(panelInput, "Username:", gbc);
         txtUsername = new JTextField(20);
         ThemeUtil.styleTextField(txtUsername);
-        gbc.gridx = 1;
-        panelInput.add(txtUsername, gbc);
+        txtUsername.setEditable(false);
+        gbc.gridx = 1; panelInput.add(txtUsername, gbc);
 
-        // Nama Lengkap
-        gbc.gridx = 0; gbc.gridy = 2;
-        JLabel lblNama = new JLabel("Nama Lengkap:");
-        lblNama.setFont(ThemeUtil.FONT_REGULAR);
-        lblNama.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblNama, gbc);
+        gbc.gridx = 0; gbc.gridy = 1;
+        addLabel(panelInput, "Nama Lengkap:", gbc);
         txtNamaLengkap = new JTextField(20);
         ThemeUtil.styleTextField(txtNamaLengkap);
-        gbc.gridx = 1;
-        panelInput.add(txtNamaLengkap, gbc);
+        gbc.gridx = 1; panelInput.add(txtNamaLengkap, gbc);
 
-        // Password
+        gbc.gridx = 0; gbc.gridy = 2;
+        addLabel(panelInput, "Password Lama:", gbc);
+        txtPasswordLama = new JPasswordField(20);
+        ThemeUtil.stylePasswordField(txtPasswordLama);
+        gbc.gridx = 1; panelInput.add(txtPasswordLama, gbc);
+
         gbc.gridx = 0; gbc.gridy = 3;
-        JLabel lblPass = new JLabel("Password:");
-        lblPass.setFont(ThemeUtil.FONT_REGULAR);
-        lblPass.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblPass, gbc);
-        
-        JPanel passPanel = new JPanel(new BorderLayout(5, 0));
-        passPanel.setOpaque(false);
-        txtPassword = new JPasswordField(20);
-        ThemeUtil.styleTextField(txtPassword);
-        passPanel.add(txtPassword, BorderLayout.CENTER);
-        
-        chkShowPassword = new JCheckBox("Tampilkan");
-        chkShowPassword.setOpaque(false);
-        chkShowPassword.setFont(ThemeUtil.FONT_REGULAR);
-        chkShowPassword.setForeground(ThemeUtil.TEXT_SECONDARY);
-        chkShowPassword.addActionListener(e -> {
-            if (chkShowPassword.isSelected()) {
-                txtPassword.setEchoChar((char) 0);
-            } else {
-                txtPassword.setEchoChar('•');
-            }
-        });
-        passPanel.add(chkShowPassword, BorderLayout.EAST);
-        
-        gbc.gridx = 1;
-        panelInput.add(passPanel, gbc);
+        addLabel(panelInput, "Password Baru:", gbc);
+        txtPasswordBaru = new JPasswordField(20);
+        ThemeUtil.stylePasswordField(txtPasswordBaru);
+        gbc.gridx = 1; panelInput.add(txtPasswordBaru, gbc);
 
-        // Button
-        JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        gbc.gridx = 0; gbc.gridy = 4;
+        addLabel(panelInput, "Konfirmasi Password:", gbc);
+        txtKonfirmasiPassword = new JPasswordField(20);
+        ThemeUtil.stylePasswordField(txtKonfirmasiPassword);
+        gbc.gridx = 1; panelInput.add(txtKonfirmasiPassword, gbc);
+
+        JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panelBtn.setOpaque(false);
-        panelBtn.setBorder(new EmptyBorder(15, 0, 0, 0));
-        btnSimpan = new JButton("Simpan Perubahan");
-        ThemeUtil.styleButton(btnSimpan, new Color(59, 130, 246));
-        btnSimpan.addActionListener(e -> simpan());
+        btnSimpan = new JButton("Update Profil"); 
+        ThemeUtil.styleButton(btnSimpan, ThemeUtil.OCEAN_BLUE);
+
         panelBtn.add(btnSimpan);
 
-        gbc.gridx = 1; gbc.gridy = 4;
-        panelInput.add(panelBtn, gbc);
-
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setOpaque(false);
-
-        JPanel wrapTop = new JPanel(new BorderLayout());
-        wrapTop.setOpaque(false);
-        wrapTop.add(panelInput, BorderLayout.WEST);
+        panelTop.add(panelInput, BorderLayout.CENTER);
+        panelTop.add(panelBtn, BorderLayout.SOUTH);
         
-        centerPanel.add(wrapTop, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
+        // Wrap with a flow layout so it doesn't stretch vertically too much
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setOpaque(false);
+        wrapper.add(panelTop, BorderLayout.NORTH);
+
+        add(wrapper, BorderLayout.CENTER);
+
+        // Events
+        btnSimpan.addActionListener(e -> updateProfil());
+    }
+
+    private void addLabel(JPanel p, String text, GridBagConstraints gbc) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(ThemeUtil.FONT_REGULAR);
+        lbl.setForeground(ThemeUtil.TEXT_SECONDARY);
+        p.add(lbl, gbc);
     }
 
     private void loadData() {
-        txtLevel.setText(currentUser.getLevel());
-        txtUsername.setText(currentUser.getUsername());
-        txtNamaLengkap.setText(currentUser.getNamaLengkap());
-        txtPassword.setText(currentUser.getPassword());
+        if (currentUser != null) {
+            txtUsername.setText(currentUser.getUsername());
+            txtNamaLengkap.setText(currentUser.getNamaLengkap());
+        }
     }
 
-    private void simpan() {
-        String username = txtUsername.getText().trim();
-        String nama = txtNamaLengkap.getText().trim();
-        String password = new String(txtPassword.getPassword()).trim();
+    private void updateProfil() {
+        if (currentUser == null) return;
 
-        if(username.isEmpty() || nama.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Semua field harus diisi!");
+        String namaBaru = txtNamaLengkap.getText().trim();
+        String passLama = new String(txtPasswordLama.getPassword());
+        String passBaru = new String(txtPasswordBaru.getPassword());
+        String confPass = new String(txtKonfirmasiPassword.getPassword());
+
+        if (namaBaru.isEmpty()) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Nama Lengkap tidak boleh kosong");
             return;
         }
 
-        currentUser.setUsername(username);
-        currentUser.setNamaLengkap(nama);
-        currentUser.setPassword(password);
+        String passwordToSave = currentUser.getPassword();
 
-        if(userService.updateUser(currentUser)) {
-            JOptionPane.showMessageDialog(this, "Profil berhasil diperbarui!");
-            if(onProfileUpdated != null) {
-                onProfileUpdated.run();
+        // Jika ingin ubah password
+        if (!passLama.isEmpty() || !passBaru.isEmpty() || !confPass.isEmpty()) {
+            if (!passLama.equals(currentUser.getPassword())) {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Password Lama salah!");
+                return;
+            }
+            if (passBaru.length() < 6) {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Password Baru minimal 6 karakter!");
+                return;
+            }
+            if (!passBaru.equals(confPass)) {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Konfirmasi Password tidak cocok!");
+                return;
+            }
+            passwordToSave = passBaru;
+        }
+
+        currentUser.setNamaLengkap(namaBaru);
+        currentUser.setPassword(passwordToSave);
+
+        if (service.updateUser(currentUser)) {
+            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Profil berhasil diupdate!");
+            txtPasswordLama.setText("");
+            txtPasswordBaru.setText("");
+            txtKonfirmasiPassword.setText("");
+            if (onUpdate != null) {
+                onUpdate.run();
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Gagal memperbarui profil!");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengupdate profil!");
         }
     }
 }

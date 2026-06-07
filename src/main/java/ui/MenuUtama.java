@@ -1,10 +1,12 @@
 package ui;
 
 import model.User;
+import ui.components.Toast;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import util.ThemeUtil;
+import ui.components.RoundedPanel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,7 +30,6 @@ public class MenuUtama extends JFrame {
     private UserForm userForm;
     private JLabel lblUserInfo;
     
-    // Untuk tracking tombol aktif
     private java.util.List<JButton> sidebarButtons = new ArrayList<>();
 
     public MenuUtama(User user) {
@@ -47,30 +48,27 @@ public class MenuUtama extends JFrame {
         mainContainer.setLayout(new BorderLayout());
 
         // ==================== TOPBAR (NORTH) ====================
-        // Desain Topbar putih bersih ala Modern SaaS
         JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setBackground(Color.WHITE);
+        topBar.setBackground(ThemeUtil.BG_WHITE);
         topBar.setPreferredSize(new Dimension(getWidth(), 70));
         topBar.setBorder(BorderFactory.createCompoundBorder(
-            new MatteBorder(0, 0, 1, 0, new Color(226, 232, 240)), // Subtle bottom border
+            new MatteBorder(0, 0, 1, 0, ThemeUtil.BORDER_COLOR),
             new EmptyBorder(10, 25, 10, 25)
         ));
 
-        // Judul Aplikasi (Tanpa Emoji)
         JLabel lblTitle = new JLabel("Toko Berkah Jaya");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26)); // Dibuat lebih besar
-        lblTitle.setForeground(ThemeUtil.TEXT_PRIMARY); // Slate-900
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
 
-        // Area Kanan (User Info & Logout)
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 5));
         userPanel.setOpaque(false);
         
         lblUserInfo = new JLabel("Halo, " + loggedInUser.getNamaLengkap() + " (" + loggedInUser.getLevel() + ")");
-        lblUserInfo.setForeground(new Color(71, 85, 105));
-        lblUserInfo.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        lblUserInfo.setForeground(ThemeUtil.TEXT_SECONDARY);
+        lblUserInfo.setFont(ThemeUtil.FONT_REGULAR);
 
         JButton btnLogout = new JButton("Logout");
-        ThemeUtil.styleButton(btnLogout, new Color(239, 68, 68)); // Red-500
+        ThemeUtil.styleButton(btnLogout, ThemeUtil.ERROR_COLOR);
         btnLogout.addActionListener(e -> {
             new LoginForm().setVisible(true);
             dispose();
@@ -84,35 +82,31 @@ public class MenuUtama extends JFrame {
 
 
         // ==================== SIDEBAR (WEST) ====================
-        // Desain Sidebar Gelap (Slate-900) ala Modern Admin Dashboard
         JPanel sideBar = new JPanel();
         sideBar.setLayout(new BoxLayout(sideBar, BoxLayout.Y_AXIS));
-        sideBar.setBackground(new Color(15, 23, 42)); 
+        sideBar.setBackground(ThemeUtil.OCEAN_BLUE); 
         sideBar.setPreferredSize(new Dimension(260, getHeight()));
-        sideBar.setBorder(new MatteBorder(0, 0, 0, 1, new Color(30, 41, 59)));
 
-        // Spacing atas sidebar
         sideBar.add(Box.createRigidArea(new Dimension(0, 30)));
 
         JLabel lblMenuMaster = new JLabel("   MAIN MENU");
-        lblMenuMaster.setForeground(new Color(148, 163, 184)); // Slate-400
+        lblMenuMaster.setForeground(new Color(207, 250, 254)); // Cyan-100
         lblMenuMaster.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblMenuMaster.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblMenuMaster.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
-        JButton btnKategori = createSidebarButton("Kelola Kategori", "KATEGORI");
-        JButton btnBarang = createSidebarButton("Kelola Barang", "BARANG");
-        JButton btnCustomer = createSidebarButton("Kelola Customer", "CUSTOMER");
+        JButton btnKategori = createSidebarButton("Kelola Kategori");
+        JButton btnBarang = createSidebarButton("Kelola Barang");
+        JButton btnCustomer = createSidebarButton("Kelola Customer");
 
         JLabel lblMenuTransaksi = new JLabel("   TRANSAKSI");
-        lblMenuTransaksi.setForeground(new Color(148, 163, 184));
+        lblMenuTransaksi.setForeground(new Color(207, 250, 254));
         lblMenuTransaksi.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblMenuTransaksi.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblMenuTransaksi.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
-        JButton btnPenjualan = createSidebarButton("Kasir / Penjualan", "PENJUALAN");
+        JButton btnPenjualan = createSidebarButton("Kasir / Penjualan");
 
-        // Add components to Sidebar
         sideBar.add(lblMenuMaster);
         sideBar.add(Box.createRigidArea(new Dimension(0, 10)));
         sideBar.add(btnKategori);
@@ -126,13 +120,13 @@ public class MenuUtama extends JFrame {
         sideBar.add(btnPenjualan);
         
         JLabel lblMenuPengaturan = new JLabel("   PENGATURAN");
-        lblMenuPengaturan.setForeground(new Color(148, 163, 184));
+        lblMenuPengaturan.setForeground(new Color(207, 250, 254));
         lblMenuPengaturan.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblMenuPengaturan.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblMenuPengaturan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
-        JButton btnKelolaUser = createSidebarButton("Kelola User", "USER");
-        JButton btnProfil = createSidebarButton("Profil Saya", "PROFIL");
+        JButton btnKelolaUser = createSidebarButton("Kelola User");
+        JButton btnProfil = createSidebarButton("Profil Saya");
         
         sideBar.add(Box.createRigidArea(new Dimension(0, 30)));
         sideBar.add(lblMenuPengaturan);
@@ -144,27 +138,26 @@ public class MenuUtama extends JFrame {
         // ==================== MAIN CONTENT (CENTER / CARDLAYOUT) ====================
         cardLayout = new CardLayout();
         mainContent = new JPanel(cardLayout);
-        mainContent.setBackground(new Color(248, 250, 252)); // Slate-50 background (sangat soft gray)
+        mainContent.setBackground(ThemeUtil.BG_SOFT); 
         
-        // 1. Welcome Panel
         welcomePanel = new JPanel(new GridBagLayout());
-        welcomePanel.setBackground(new Color(248, 250, 252));
+        welcomePanel.setBackground(ThemeUtil.BG_SOFT);
         
-        JPanel welcomeBox = new JPanel(new GridLayout(2, 1, 0, 10));
-        welcomeBox.setOpaque(false);
+        RoundedPanel welcomeBox = ThemeUtil.createCardPanel(); // Rounded card
+        welcomeBox.setLayout(new GridLayout(2, 1, 0, 10));
+        
         JLabel lblWelcomeTitle = new JLabel("Selamat Datang di Toko Berkah Jaya", SwingConstants.CENTER);
         lblWelcomeTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        lblWelcomeTitle.setForeground(new Color(15, 23, 42));
+        lblWelcomeTitle.setForeground(ThemeUtil.OCEAN_BLUE);
         
         JLabel lblWelcomeSub = new JLabel("Silakan pilih menu di samping kiri untuk memulai aktivitas Anda.", SwingConstants.CENTER);
-        lblWelcomeSub.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        lblWelcomeSub.setForeground(new Color(100, 116, 139));
+        lblWelcomeSub.setFont(ThemeUtil.FONT_REGULAR);
+        lblWelcomeSub.setForeground(ThemeUtil.TEXT_SECONDARY);
         
         welcomeBox.add(lblWelcomeTitle);
         welcomeBox.add(lblWelcomeSub);
         welcomePanel.add(welcomeBox);
 
-        // 2. Instantiate Forms
         kategoriForm = new KategoriForm();
         barangForm = new BarangForm();
         customerForm = new CustomerForm();
@@ -174,7 +167,6 @@ public class MenuUtama extends JFrame {
             lblUserInfo.setText("Halo, " + loggedInUser.getNamaLengkap() + " (" + loggedInUser.getLevel() + ")");
         });
 
-        // 3. Add to CardLayout
         mainContent.add(welcomePanel, "WELCOME");
         mainContent.add(kategoriForm, "KATEGORI");
         mainContent.add(barangForm, "BARANG");
@@ -183,7 +175,6 @@ public class MenuUtama extends JFrame {
         mainContent.add(userForm, "USER");
         mainContent.add(profilForm, "PROFIL");
 
-        // Tampilkan welcome secara default
         cardLayout.show(mainContent, "WELCOME");
 
         // ==================== ACTIONS / ROUTING ====================
@@ -204,15 +195,10 @@ public class MenuUtama extends JFrame {
         btnKelolaUser.addActionListener(e -> { setActiveButton(btnKelolaUser); cardLayout.show(mainContent, "USER"); });
         btnProfil.addActionListener(e -> { setActiveButton(btnProfil); cardLayout.show(mainContent, "PROFIL"); });
 
-        // Role-based Access Control (Fail-safe: Hide if NOT Admin)
         if (!"Admin".equalsIgnoreCase(loggedInUser.getLevel())) {
-            // Sembunyikan menu sepenuhnya
             btnKategori.setVisible(false);
             btnBarang.setVisible(false);
             btnKelolaUser.setVisible(false);
-            sideBar.remove(btnKategori);
-            sideBar.remove(btnBarang);
-            sideBar.remove(btnKelolaUser);
         }
 
         // ==================== ASSEMBLE ====================
@@ -221,50 +207,50 @@ public class MenuUtama extends JFrame {
         mainContainer.add(mainContent, BorderLayout.CENTER);
     }
 
-    private JButton createSidebarButton(String text, String cardName) {
+    private JButton createSidebarButton(String text) {
         JButton btn = new JButton("   " + text);
-        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); // Supaya melar memenuhi lebar sidebar
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); 
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btn.setBackground(new Color(15, 23, 42)); // Slate-900
-        btn.setForeground(new Color(241, 245, 249)); // Slate-100
+        btn.setBackground(ThemeUtil.OCEAN_BLUE); 
+        btn.setForeground(Color.WHITE); 
         btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); // Padding kiri ditingkatkan
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        btn.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); 
+        btn.setFont(ThemeUtil.FONT_REGULAR);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Simpan button untuk tracking
         sidebarButtons.add(btn);
         
         btn.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 if(btn.isEnabled() && !btn.getName().equals("ACTIVE")) {
-                    btn.setBackground(new Color(30, 41, 59)); // Slate-800 on hover
+                    btn.setBackground(ThemeUtil.OCEAN_BLUE_DARK);
                 }
             }
             public void mouseExited(MouseEvent evt) {
                 if(btn.isEnabled() && !btn.getName().equals("ACTIVE")) {
-                    btn.setBackground(new Color(15, 23, 42)); // Revert
+                    btn.setBackground(ThemeUtil.OCEAN_BLUE); 
                 }
             }
         });
         
-        // Default penanda
         btn.setName("");
         return btn;
     }
     
-    // Method untuk mengatur highlight menu yang sedang aktif
     private void setActiveButton(JButton activeBtn) {
         for(JButton btn : sidebarButtons) {
-            btn.setName(""); // Clear status
+            btn.setName(""); 
             if(btn.isEnabled()) {
-                btn.setBackground(new Color(15, 23, 42)); // Reset background
-                btn.setForeground(new Color(241, 245, 249)); // Reset text
+                btn.setBackground(ThemeUtil.OCEAN_BLUE); 
+                btn.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
             }
         }
         activeBtn.setName("ACTIVE");
-        activeBtn.setBackground(new Color(56, 189, 248).brighter().darker()); // Highlight warna biru soft
-        activeBtn.setForeground(Color.WHITE);
+        activeBtn.setBackground(ThemeUtil.OCEAN_BLUE_DARK); 
+        activeBtn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 4, 0, 0, ThemeUtil.SKY_BLUE),
+            BorderFactory.createEmptyBorder(0, 16, 0, 0)
+        ));
     }
 }

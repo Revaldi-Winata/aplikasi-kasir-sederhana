@@ -2,409 +2,349 @@ package ui;
 
 import model.Barang;
 import model.Customer;
-import model.DetailPenjualan;
 import model.Penjualan;
+import model.DetailPenjualan;
 import model.User;
 import service.BarangService;
 import service.CustomerService;
 import service.PenjualanService;
-import util.Formatter;
+import ui.components.Toast;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
+import ui.components.RoundedPanel;
 import java.awt.*;
-import java.sql.Date;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class PenjualanForm extends JPanel {
 
-    private JComboBox<Customer> cbCustomer;
-    private JComboBox<Barang> cbBarang;
-    private JTextField txtHarga, txtJumlah, txtSubtotal;
-    private JLabel lblGrandTotal;
-    private JButton btnTambahKeranjang, btnHapusItem, btnSimpan, btnRefresh;
-    private JTable tableKeranjang, tableRiwayat;
-    private DefaultTableModel modelKeranjang, modelRiwayat;
+    private JTextField txtIdTrans, txtTanggal, txtQty, txtTotal, txtBayar, txtKembali;
+    private JComboBox<String> cbCustomer, cbBarang;
+    private JButton btnTambah, btnSimpan, btnClear;
+    private JTable tableKeranjang;
+    private DefaultTableModel modelKeranjang;
 
-    private PenjualanService penjualanService;
     private BarangService barangService;
     private CustomerService customerService;
-    private User loggedInUser;
+    private PenjualanService penjualanService;
 
-    // In-memory cart
-    private List<DetailPenjualan> keranjang = new ArrayList<>();
+    private List<Customer> listCustomer;
+    private List<Barang> listBarang;
+    private List<DetailPenjualan> keranjang;
+    private User currentUser;
+
+    private double grandTotal = 0;
 
     public PenjualanForm(User user) {
-        this.loggedInUser = user;
-        penjualanService = new PenjualanService();
+        this.currentUser = user;
         barangService = new BarangService();
         customerService = new CustomerService();
+        penjualanService = new PenjualanService();
+        keranjang = new ArrayList<>();
 
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(20, 20));
         setBackground(ThemeUtil.BG_SOFT);
-        setBorder(new EmptyBorder(30, 30, 30, 30));
+        setBorder(new EmptyBorder(20, 30, 20, 30));
+
         initComponents();
         loadCombo();
-        loadRiwayat();
+        clearForm();
     }
 
     private void initComponents() {
-        // Title
-        JLabel lblTitle = new JLabel("Transaksi Kasir / Penjualan");
+        JLabel lblTitle = new JLabel("Transaksi Penjualan");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.TEXT_PRIMARY);
-        lblTitle.setBorder(new EmptyBorder(0, 0, 15, 0));
+        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
         add(lblTitle, BorderLayout.NORTH);
 
-        // ========== TOP SECTION: Input + Keranjang ==========
-        JPanel panelTop = new JPanel(new BorderLayout(15, 10));
-        panelTop.setOpaque(false);
-
-        // --- Left: Input Form ---
-        JPanel panelInput = new JPanel(new GridBagLayout());
-        panelInput.setOpaque(false);
+        // --- Panel Kiri: Input Keranjang ---
+        RoundedPanel panelInput = ThemeUtil.createCardPanel();
+        panelInput.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(5, 5, 5, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Customer
         gbc.gridx = 0; gbc.gridy = 0;
-        JLabel lblCustomer = new JLabel("Customer:");
-        lblCustomer.setFont(ThemeUtil.FONT_REGULAR);
-        lblCustomer.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblCustomer, gbc);
+        addLabel(panelInput, "No Faktur:", gbc);
+        txtIdTrans = new JTextField(15);
+        ThemeUtil.styleTextField(txtIdTrans);
+        txtIdTrans.setEditable(false);
+        gbc.gridx = 1; panelInput.add(txtIdTrans, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        addLabel(panelInput, "Tanggal:", gbc);
+        txtTanggal = new JTextField(15);
+        ThemeUtil.styleTextField(txtTanggal);
+        txtTanggal.setEditable(false);
+        txtTanggal.setText(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        gbc.gridx = 1; panelInput.add(txtTanggal, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 2;
+        addLabel(panelInput, "Customer:", gbc);
         cbCustomer = new JComboBox<>();
         ThemeUtil.styleComboBox(cbCustomer);
-        gbc.gridx = 1;
-        panelInput.add(cbCustomer, gbc);
+        gbc.gridx = 1; panelInput.add(cbCustomer, gbc);
 
-        // Barang
-        gbc.gridx = 0; gbc.gridy = 1;
-        JLabel lblBarang = new JLabel("Barang:");
-        lblBarang.setFont(ThemeUtil.FONT_REGULAR);
-        lblBarang.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblBarang, gbc);
+        gbc.gridx = 0; gbc.gridy = 3;
+        addLabel(panelInput, "Barang:", gbc);
         cbBarang = new JComboBox<>();
         ThemeUtil.styleComboBox(cbBarang);
-        gbc.gridx = 1;
-        panelInput.add(cbBarang, gbc);
+        gbc.gridx = 1; panelInput.add(cbBarang, gbc);
 
-        // Harga Satuan
-        gbc.gridx = 0; gbc.gridy = 2;
-        JLabel lblHarga = new JLabel("Harga Satuan:");
-        lblHarga.setFont(ThemeUtil.FONT_REGULAR);
-        lblHarga.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblHarga, gbc);
-        txtHarga = new JTextField(20);
-        ThemeUtil.styleTextField(txtHarga);
-        txtHarga.setEditable(false);
-        gbc.gridx = 1;
-        panelInput.add(txtHarga, gbc);
-
-        // Jumlah Beli
-        gbc.gridx = 0; gbc.gridy = 3;
-        JLabel lblJumlah = new JLabel("Jumlah Beli:");
-        lblJumlah.setFont(ThemeUtil.FONT_REGULAR);
-        lblJumlah.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblJumlah, gbc);
-        txtJumlah = new JTextField(20);
-        ThemeUtil.styleTextField(txtJumlah);
-        gbc.gridx = 1;
-        panelInput.add(txtJumlah, gbc);
-
-        // Subtotal
         gbc.gridx = 0; gbc.gridy = 4;
-        JLabel lblSubtotal = new JLabel("Subtotal:");
-        lblSubtotal.setFont(ThemeUtil.FONT_REGULAR);
-        lblSubtotal.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblSubtotal, gbc);
-        txtSubtotal = new JTextField(20);
-        ThemeUtil.styleTextField(txtSubtotal);
-        txtSubtotal.setEditable(false);
-        gbc.gridx = 1;
-        panelInput.add(txtSubtotal, gbc);
+        addLabel(panelInput, "Qty:", gbc);
+        txtQty = new JTextField(15);
+        ThemeUtil.styleTextField(txtQty);
+        gbc.gridx = 1; panelInput.add(txtQty, gbc);
 
-        // Button: Tambah ke Keranjang
-        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
-        JPanel panelBtnInput = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        panelBtnInput.setOpaque(false);
-        btnTambahKeranjang = new JButton("+ Tambah ke Keranjang");
-        ThemeUtil.styleButton(btnTambahKeranjang, new Color(59, 130, 246));
-        panelBtnInput.add(btnTambahKeranjang);
-        panelInput.add(panelBtnInput, gbc);
-        gbc.gridwidth = 1;
+        btnTambah = new JButton("Tambah ke Keranjang");
+        ThemeUtil.styleButton(btnTambah, ThemeUtil.OCEAN_BLUE);
+        gbc.gridx = 1; gbc.gridy = 5;
+        gbc.insets = new Insets(15, 5, 5, 15);
+        panelInput.add(btnTambah, gbc);
 
-        JPanel wrapInput = new JPanel(new BorderLayout());
-        wrapInput.setOpaque(false);
-        wrapInput.add(panelInput, BorderLayout.NORTH);
-
-        // --- Right: Keranjang Table ---
-        JPanel panelKeranjang = new JPanel(new BorderLayout(0, 5));
-        panelKeranjang.setOpaque(false);
-        TitledBorder keranjangBorder = BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200)),
-                "Keranjang Belanja");
-        keranjangBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 13));
-        keranjangBorder.setTitleColor(ThemeUtil.TEXT_PRIMARY);
-        panelKeranjang.setBorder(keranjangBorder);
-
-        modelKeranjang = new DefaultTableModel(new String[]{"Barang", "Harga Satuan", "Jumlah", "Subtotal"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+        // --- Panel Tengah: Tabel Keranjang ---
+        RoundedPanel panelTabel = ThemeUtil.createCardPanel();
+        panelTabel.setLayout(new BorderLayout());
+        modelKeranjang = new DefaultTableModel(new String[]{"ID Barang", "Nama Barang", "Harga", "Qty", "Subtotal"}, 0) {
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         tableKeranjang = new JTable(modelKeranjang);
-        JScrollPane scrollKeranjang = new JScrollPane(tableKeranjang);
-        ThemeUtil.styleTable(tableKeranjang, scrollKeranjang);
-        scrollKeranjang.setPreferredSize(new Dimension(400, 160));
-        panelKeranjang.add(scrollKeranjang, BorderLayout.CENTER);
+        JScrollPane scrollTabel = new JScrollPane(tableKeranjang);
+        ThemeUtil.styleTable(tableKeranjang, scrollTabel);
+        panelTabel.add(scrollTabel, BorderLayout.CENTER);
 
-        // Keranjang footer: grand total + buttons
-        JPanel panelKeranjangFooter = new JPanel(new BorderLayout(10, 0));
-        panelKeranjangFooter.setOpaque(false);
+        // --- Panel Kanan: Pembayaran ---
+        RoundedPanel panelBayar = ThemeUtil.createCardPanel();
+        panelBayar.setLayout(new GridBagLayout());
+        GridBagConstraints gbcB = new GridBagConstraints();
+        gbcB.insets = new Insets(5, 5, 5, 15);
+        gbcB.fill = GridBagConstraints.HORIZONTAL;
 
-        lblGrandTotal = new JLabel("Grand Total: Rp 0");
-        lblGrandTotal.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblGrandTotal.setForeground(new Color(16, 185, 129));
-        panelKeranjangFooter.add(lblGrandTotal, BorderLayout.WEST);
+        gbcB.gridx = 0; gbcB.gridy = 0;
+        addLabel(panelBayar, "Total:", gbcB);
+        txtTotal = new JTextField(15);
+        ThemeUtil.styleTextField(txtTotal);
+        txtTotal.setEditable(false);
+        txtTotal.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        gbcB.gridx = 1; panelBayar.add(txtTotal, gbcB);
 
-        JPanel panelBtnKeranjang = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        panelBtnKeranjang.setOpaque(false);
+        gbcB.gridx = 0; gbcB.gridy = 1;
+        addLabel(panelBayar, "Bayar:", gbcB);
+        txtBayar = new JTextField(15);
+        ThemeUtil.styleTextField(txtBayar);
+        txtBayar.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        gbcB.gridx = 1; panelBayar.add(txtBayar, gbcB);
 
-        btnHapusItem = new JButton("Hapus Item");
-        ThemeUtil.styleButton(btnHapusItem, new Color(239, 68, 68));
-        btnHapusItem.setEnabled(false);
+        gbcB.gridx = 0; gbcB.gridy = 2;
+        addLabel(panelBayar, "Kembali:", gbcB);
+        txtKembali = new JTextField(15);
+        ThemeUtil.styleTextField(txtKembali);
+        txtKembali.setEditable(false);
+        txtKembali.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        gbcB.gridx = 1; panelBayar.add(txtKembali, gbcB);
 
+        JPanel panelBtnSave = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        panelBtnSave.setOpaque(false);
         btnSimpan = new JButton("Simpan Transaksi");
-        ThemeUtil.styleButton(btnSimpan, new Color(16, 185, 129));
-        btnSimpan.setEnabled(false);
+        ThemeUtil.styleButton(btnSimpan, ThemeUtil.SUCCESS_COLOR);
+        btnClear = new JButton("Clear Keranjang");
+        ThemeUtil.styleButton(btnClear, ThemeUtil.ERROR_COLOR);
+        panelBtnSave.add(btnClear);
+        panelBtnSave.add(btnSimpan);
 
-        btnRefresh = new JButton("Refresh");
-        ThemeUtil.styleButton(btnRefresh, new Color(245, 158, 11));
+        gbcB.gridx = 0; gbcB.gridy = 3;
+        gbcB.gridwidth = 2;
+        gbcB.insets = new Insets(20, 5, 5, 15);
+        panelBayar.add(panelBtnSave, gbcB);
 
-        panelBtnKeranjang.add(btnHapusItem);
-        panelBtnKeranjang.add(btnSimpan);
-        panelBtnKeranjang.add(btnRefresh);
-        panelKeranjangFooter.add(panelBtnKeranjang, BorderLayout.EAST);
+        // Layout Kombinasi
+        JPanel panelUtama = new JPanel(new BorderLayout(15, 15));
+        panelUtama.setOpaque(false);
+        
+        JPanel panelAtas = new JPanel(new BorderLayout(15, 15));
+        panelAtas.setOpaque(false);
+        panelAtas.add(panelInput, BorderLayout.WEST);
+        panelAtas.add(panelBayar, BorderLayout.CENTER);
 
-        panelKeranjang.add(panelKeranjangFooter, BorderLayout.SOUTH);
+        panelUtama.add(panelAtas, BorderLayout.NORTH);
+        panelUtama.add(panelTabel, BorderLayout.CENTER);
 
-        panelTop.add(wrapInput, BorderLayout.WEST);
-        panelTop.add(panelKeranjang, BorderLayout.CENTER);
+        add(panelUtama, BorderLayout.CENTER);
 
-        // ========== BOTTOM SECTION: Riwayat ==========
-        JPanel panelRiwayat = new JPanel(new BorderLayout(0, 5));
-        panelRiwayat.setOpaque(false);
-        TitledBorder riwayatBorder = BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200)),
-                "Riwayat Transaksi");
-        riwayatBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 13));
-        riwayatBorder.setTitleColor(ThemeUtil.TEXT_PRIMARY);
-        panelRiwayat.setBorder(riwayatBorder);
-
-        modelRiwayat = new DefaultTableModel(new String[]{"No Faktur", "Tanggal", "Customer", "Total Bayar"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        tableRiwayat = new JTable(modelRiwayat);
-        JScrollPane scrollRiwayat = new JScrollPane(tableRiwayat);
-        ThemeUtil.styleTable(tableRiwayat, scrollRiwayat);
-        panelRiwayat.add(scrollRiwayat, BorderLayout.CENTER);
-
-        // Main layout
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelTop, panelRiwayat);
-        splitPane.setResizeWeight(0.5);
-        splitPane.setDividerSize(5);
-        splitPane.setBorder(null);
-        splitPane.setOpaque(false);
-        add(splitPane, BorderLayout.CENTER);
-
-        // ========== EVENTS ==========
-        cbBarang.addActionListener(e -> {
-            Barang b = (Barang) cbBarang.getSelectedItem();
-            if (b != null) {
-                txtHarga.setText(String.valueOf(b.getHargaJual()));
-                hitungSubtotal();
-            }
-        });
-
-        txtJumlah.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { hitungSubtotal(); }
-            public void removeUpdate(DocumentEvent e) { hitungSubtotal(); }
-            public void changedUpdate(DocumentEvent e) { hitungSubtotal(); }
-        });
-
-        btnTambahKeranjang.addActionListener(e -> tambahKeKeranjang());
-        btnHapusItem.addActionListener(e -> hapusDariKeranjang());
+        // Events
+        btnTambah.addActionListener(e -> tambahKeKeranjang());
+        btnClear.addActionListener(e -> clearForm());
         btnSimpan.addActionListener(e -> simpanTransaksi());
-        btnRefresh.addActionListener(e -> { loadCombo(); loadRiwayat(); });
 
-        tableKeranjang.getSelectionModel().addListSelectionListener(e -> {
-            btnHapusItem.setEnabled(tableKeranjang.getSelectedRow() >= 0);
+        txtBayar.addActionListener(e -> hitungKembali());
+        txtBayar.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                hitungKembali();
+            }
         });
     }
 
-    private void hitungSubtotal() {
-        double harga = Formatter.parseDoubleSafe(txtHarga.getText());
-        int jumlah = Formatter.parseIntSafe(txtJumlah.getText());
-        txtSubtotal.setText(String.valueOf(harga * jumlah));
-    }
-
-    private void tambahKeKeranjang() {
-        Barang b = (Barang) cbBarang.getSelectedItem();
-        int jumlah = Formatter.parseIntSafe(txtJumlah.getText());
-
-        if (b == null) {
-            JOptionPane.showMessageDialog(this, "Pilih barang terlebih dahulu!");
-            return;
-        }
-        if (jumlah <= 0) {
-            JOptionPane.showMessageDialog(this, "Jumlah beli harus lebih dari 0!");
-            return;
-        }
-        if (jumlah > b.getStok()) {
-            JOptionPane.showMessageDialog(this,
-                    "Stok tidak mencukupi! Sisa stok: " + b.getStok(),
-                    "Peringatan", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        // Check if barang already in cart — accumulate
-        boolean found = false;
-        for (DetailPenjualan d : keranjang) {
-            if (d.getIdBarang().equals(b.getIdBarang())) {
-                int newQty = d.getJumlahBeli() + jumlah;
-                if (newQty > b.getStok()) {
-                    JOptionPane.showMessageDialog(this,
-                            "Total jumlah melebihi stok! Sisa stok: " + b.getStok() + ", sudah di keranjang: " + d.getJumlahBeli(),
-                            "Peringatan", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                d.setJumlahBeli(newQty);
-                d.setSubtotal(d.getHargaSatuan() * newQty);
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            DetailPenjualan detail = new DetailPenjualan();
-            detail.setIdBarang(b.getIdBarang());
-            detail.setNamaBarang(b.getNamaBarang());
-            detail.setHargaSatuan(b.getHargaJual());
-            detail.setJumlahBeli(jumlah);
-            detail.setSubtotal(b.getHargaJual() * jumlah);
-            keranjang.add(detail);
-        }
-
-        refreshKeranjangTable();
-        txtJumlah.setText("");
-        txtSubtotal.setText("");
-    }
-
-    private void hapusDariKeranjang() {
-        int selectedRow = tableKeranjang.getSelectedRow();
-        if (selectedRow >= 0 && selectedRow < keranjang.size()) {
-            keranjang.remove(selectedRow);
-            refreshKeranjangTable();
-        }
-    }
-
-    private void refreshKeranjangTable() {
-        modelKeranjang.setRowCount(0);
-        double grandTotal = 0;
-        for (DetailPenjualan d : keranjang) {
-            modelKeranjang.addRow(new Object[]{
-                d.getNamaBarang(),
-                Formatter.formatRupiah(d.getHargaSatuan()),
-                d.getJumlahBeli(),
-                Formatter.formatRupiah(d.getSubtotal())
-            });
-            grandTotal += d.getSubtotal();
-        }
-        lblGrandTotal.setText("Grand Total: " + Formatter.formatRupiah(grandTotal));
-        btnSimpan.setEnabled(!keranjang.isEmpty());
+    private void addLabel(JPanel p, String text, GridBagConstraints gbc) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(ThemeUtil.FONT_REGULAR);
+        lbl.setForeground(ThemeUtil.TEXT_SECONDARY);
+        p.add(lbl, gbc);
     }
 
     public void loadCombo() {
         cbCustomer.removeAllItems();
-        for (Customer c : customerService.getAllCustomer()) {
-            cbCustomer.addItem(c);
+        listCustomer = customerService.getAllCustomer();
+        for (Customer c : listCustomer) {
+            cbCustomer.addItem(c.getNamaCustomer() + " (" + c.getIdCustomer() + ")");
         }
 
         cbBarang.removeAllItems();
-        for (Barang b : barangService.getAllBarang()) {
-            cbBarang.addItem(b);
+        listBarang = barangService.getAllBarang();
+        for (Barang b : listBarang) {
+            cbBarang.addItem(b.getNamaBarang() + " - " + util.Formatter.formatRupiah(b.getHargaJual()) + " (Stok: " + b.getStok() + ")");
         }
     }
-
-    public void loadRiwayat() {
-        modelRiwayat.setRowCount(0);
-        for (Penjualan p : penjualanService.getAllPenjualan()) {
-            modelRiwayat.addRow(new Object[]{
-                p.getNoFaktur(),
-                p.getTglTransaksi(),
-                p.getNamaCustomer(),
-                Formatter.formatRupiah(p.getTotalBayar())
-            });
-        }
-    }
-
-    // Keep backward compatibility for MenuUtama refresh calls
+    
     public void loadData() {
-        loadRiwayat();
+        refreshTabel();
+    }
+
+    private void clearForm() {
+        // Just use a random number or timestamp for faktur for now, or rely on service.
+        txtIdTrans.setText("INV" + System.currentTimeMillis() % 1000000); 
+        txtQty.setText("");
+        txtTotal.setText("0");
+        txtBayar.setText("");
+        txtKembali.setText("0");
+        keranjang.clear();
+        refreshTabel();
+    }
+
+    private void refreshTabel() {
+        modelKeranjang.setRowCount(0);
+        grandTotal = 0;
+        for (DetailPenjualan detail : keranjang) {
+            modelKeranjang.addRow(new Object[]{
+                    detail.getIdBarang(),
+                    getNamaBarang(detail.getIdBarang()),
+                    util.Formatter.formatRupiah(detail.getHargaSatuan()),
+                    detail.getJumlahBeli(),
+                    util.Formatter.formatRupiah(detail.getSubtotal())
+            });
+            grandTotal += detail.getSubtotal();
+        }
+        txtTotal.setText(util.Formatter.formatRupiah(grandTotal));
+        txtBayar.setText("");
+        txtKembali.setText("");
+    }
+
+    private String getNamaBarang(String id) {
+        for (Barang b : listBarang) {
+            if (b.getIdBarang().equals(id)) return b.getNamaBarang();
+        }
+        return "-";
+    }
+
+    private void tambahKeKeranjang() {
+        if (cbBarang.getSelectedIndex() < 0) return;
+        try {
+            int qty = Integer.parseInt(txtQty.getText().trim());
+            if (qty <= 0) {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Qty harus lebih besar dari 0");
+                return;
+            }
+
+            Barang b = listBarang.get(cbBarang.getSelectedIndex());
+            if (b.getStok() < qty) {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Stok tidak mencukupi!");
+                return;
+            }
+
+            // Cek jika sudah ada di keranjang
+            boolean found = false;
+            for (DetailPenjualan pd : keranjang) {
+                if (pd.getIdBarang().equals(b.getIdBarang())) {
+                    pd.setJumlahBeli(pd.getJumlahBeli() + qty);
+                    pd.setSubtotal(pd.getJumlahBeli() * pd.getHargaSatuan());
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                DetailPenjualan pd = new DetailPenjualan();
+                // pd.setIdJual(...) will be set by the service
+                pd.setIdBarang(b.getIdBarang());
+                pd.setHargaSatuan(b.getHargaJual());
+                pd.setJumlahBeli(qty);
+                pd.setSubtotal(b.getHargaJual() * qty);
+                keranjang.add(pd);
+            }
+
+            txtQty.setText("");
+            refreshTabel();
+
+        } catch (NumberFormatException e) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Qty harus angka!");
+        }
+    }
+
+    private void hitungKembali() {
+        try {
+            double bayar = Double.parseDouble(txtBayar.getText().trim());
+            double kembali = bayar - grandTotal;
+            txtKembali.setText(util.Formatter.formatRupiah(kembali));
+        } catch (Exception e) {
+            txtKembali.setText("Error");
+        }
     }
 
     private void simpanTransaksi() {
-        Customer c = (Customer) cbCustomer.getSelectedItem();
-        if (c == null) {
-            JOptionPane.showMessageDialog(this, "Pilih customer terlebih dahulu!");
-            return;
-        }
         if (keranjang.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Keranjang masih kosong! Tambahkan barang terlebih dahulu.");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Keranjang masih kosong!");
             return;
         }
-
-        // Calculate grand total from cart
-        double grandTotal = 0;
-        for (DetailPenjualan d : keranjang) {
-            grandTotal += d.getSubtotal();
+        if (cbCustomer.getSelectedIndex() < 0) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Pilih customer!");
+            return;
         }
-
-        Penjualan p = new Penjualan(
-            0, null,
-            new Date(System.currentTimeMillis()),
-            c.getIdCustomer(),
-            grandTotal,
-            loggedInUser.getIdUser()
-        );
-        p.setDetails(new ArrayList<>(keranjang));
 
         try {
-            if (penjualanService.simpanTransaksi(p)) {
-                JOptionPane.showMessageDialog(this,
-                        "Transaksi Berhasil!\nNo. Faktur: " + p.getNoFaktur(),
-                        "Sukses", JOptionPane.INFORMATION_MESSAGE);
-                keranjang.clear();
-                refreshKeranjangTable();
-                loadCombo(); // Refresh stok di combo
-                loadRiwayat();
+            double bayar = Double.parseDouble(txtBayar.getText().trim());
+            if (bayar < grandTotal) {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Uang bayar kurang!");
+                return;
             }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Transaksi Gagal: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+
+            Customer c = listCustomer.get(cbCustomer.getSelectedIndex());
+
+            Penjualan p = new Penjualan();
+            p.setNoFaktur(txtIdTrans.getText());
+            p.setTglTransaksi(new java.sql.Date(new Date().getTime()));
+            p.setIdCustomer(c.getIdCustomer());
+            p.setIdUser(currentUser != null ? currentUser.getIdUser() : 1);
+            p.setTotalBayar(grandTotal);
+            p.setDetails(keranjang);
+
+            if (penjualanService.simpanTransaksi(p)) {
+                Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Transaksi Berhasil Disimpan!");
+                clearForm();
+                loadCombo(); // refresh stok combo
+            } else {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan transaksi!");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Error: " + e.getMessage());
         }
     }
 }

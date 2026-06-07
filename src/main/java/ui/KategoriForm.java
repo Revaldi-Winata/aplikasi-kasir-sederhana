@@ -2,11 +2,13 @@ package ui;
 
 import model.Kategori;
 import service.KategoriService;
+import ui.components.Toast;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
+import ui.components.RoundedPanel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,30 +24,27 @@ public class KategoriForm extends JPanel {
 
     public KategoriForm() {
         service = new KategoriService();
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(20, 20));
         setBackground(ThemeUtil.BG_SOFT);
-        setBorder(new EmptyBorder(30, 30, 30, 30));
+        setBorder(new EmptyBorder(20, 30, 20, 30));
         initComponents();
         loadData();
-        clear(); // Untuk men-generate ID prediksi awal
+        clear();
     }
 
     private void initComponents() {
-        // Title
-        JLabel lblTitle = new JLabel("Manajemen Data Kategori");
+        JLabel lblTitle = new JLabel("Manajemen Kategori");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.TEXT_PRIMARY);
-        lblTitle.setBorder(new EmptyBorder(0, 0, 20, 0));
+        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
         add(lblTitle, BorderLayout.NORTH);
 
-        // Input Panel
-        JPanel panelTop = new JPanel(new BorderLayout(10, 10));
-        panelTop.setOpaque(false);
+        RoundedPanel panelTop = ThemeUtil.createCardPanel();
+        panelTop.setLayout(new BorderLayout(10, 10));
 
         JPanel panelInput = new JPanel(new GridBagLayout());
         panelInput.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(5, 5, 5, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
@@ -72,79 +71,52 @@ public class KategoriForm extends JPanel {
         gbc.gridx = 1;
         panelInput.add(txtNama, gbc);
 
-        // Button Panel
         JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panelBtn.setOpaque(false);
-        btnSimpan = new JButton("Simpan Data");
-        ThemeUtil.styleButton(btnSimpan, new Color(16, 185, 129)); // Emerald 500
         
-        btnUbah = new JButton("Simpan Perubahan");
-        ThemeUtil.styleButton(btnUbah, new Color(59, 130, 246)); // Blue 500
-        
-        btnHapus = new JButton("Hapus Data");
-        ThemeUtil.styleButton(btnHapus, new Color(239, 68, 68)); // Red 500
-        
-        btnClear = new JButton("Bersihkan Form");
-        ThemeUtil.styleButton(btnClear, new Color(100, 116, 139)); // Slate 500
+        btnSimpan = new JButton("Simpan"); ThemeUtil.styleButton(btnSimpan, ThemeUtil.SUCCESS_COLOR);
+        btnUbah = new JButton("Ubah"); ThemeUtil.styleButton(btnUbah, ThemeUtil.OCEAN_BLUE);
+        btnHapus = new JButton("Hapus"); ThemeUtil.styleButton(btnHapus, ThemeUtil.ERROR_COLOR);
+        btnClear = new JButton("Clear"); ThemeUtil.styleButton(btnClear, ThemeUtil.TEXT_SECONDARY);
 
         panelBtn.add(btnSimpan);
         panelBtn.add(btnUbah);
         panelBtn.add(btnHapus);
         panelBtn.add(btnClear);
+
+        panelTop.add(panelInput, BorderLayout.CENTER);
+        panelTop.add(panelBtn, BorderLayout.SOUTH);
         
-        // Initial state for buttons (Option B UX)
-        btnUbah.setEnabled(false);
-        btnHapus.setEnabled(false);
-        btnSimpan.setEnabled(true);
+        add(panelTop, BorderLayout.NORTH);
 
-        JPanel wrapInput = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        wrapInput.setOpaque(false);
-        wrapInput.add(panelInput);
+        RoundedPanel panelBottom = ThemeUtil.createCardPanel();
+        panelBottom.setLayout(new BorderLayout());
 
-        panelTop.add(wrapInput, BorderLayout.NORTH);
-        panelTop.add(panelBtn, BorderLayout.CENTER);
-        
-        // Wrap panelTop in another panel to align it to the top
-        JPanel wrapTop = new JPanel(new BorderLayout());
-        wrapTop.setOpaque(false);
-        wrapTop.add(panelTop, BorderLayout.WEST);
-
-        // Table
         tableModel = new DefaultTableModel(new String[]{"ID Kategori", "Nama Kategori"}, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Mencegah edit langsung di dalam sel tabel
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         table = new JTable(tableModel);
-        
         JScrollPane scrollPane = new JScrollPane(table);
+        
         ThemeUtil.styleTable(table, scrollPane);
 
-        JPanel centerPanel = new JPanel(new BorderLayout(0, 20));
-        centerPanel.setOpaque(false);
-        centerPanel.add(wrapTop, BorderLayout.NORTH);
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        panelBottom.add(scrollPane, BorderLayout.CENTER);
+        add(panelBottom, BorderLayout.CENTER);
 
-        add(centerPanel, BorderLayout.CENTER);
-
-        // Actions
-        btnSimpan.addActionListener(e -> simpan());
-        btnUbah.addActionListener(e -> ubah());
-        btnHapus.addActionListener(e -> hapus());
+        // Events
+        btnSimpan.addActionListener(e -> simpanData());
+        btnUbah.addActionListener(e -> ubahData());
+        btnHapus.addActionListener(e -> hapusData());
         btnClear.addActionListener(e -> clear());
 
         table.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent me) {
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 int row = table.getSelectedRow();
-                if(row != -1) {
-                    txtId.setText(table.getValueAt(row, 0).toString());
-                    txtNama.setText(table.getValueAt(row, 1).toString());
-                    
-                    // Option B UX: Lock Simpan, Unlock Ubah & Hapus
-                    btnSimpan.setEnabled(false);
-                    btnUbah.setEnabled(true);
-                    btnHapus.setEnabled(true);
+                if (row >= 0) {
+                    txtId.setText(tableModel.getValueAt(row, 0).toString());
+                    txtNama.setText(tableModel.getValueAt(row, 1).toString());
                 }
             }
         });
@@ -161,69 +133,65 @@ public class KategoriForm extends JPanel {
     private void clear() {
         txtId.setText(service.getNextAutoIncrement());
         txtNama.setText("");
-        txtNama.requestFocus();
         table.clearSelection();
+    }
+
+    private void simpanData() {
+        if (txtNama.getText().trim().isEmpty()) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Nama Kategori tidak boleh kosong!");
+            return;
+        }
+
+        Kategori k = new Kategori();
+        k.setNamaKategori(txtNama.getText().trim());
         
-        // Option B UX: Reset buttons
-        btnSimpan.setEnabled(true);
-        btnUbah.setEnabled(false);
-        btnHapus.setEnabled(false);
-    }
-
-    private void simpan() {
-        if(txtNama.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nama Kategori harus diisi!");
-            return;
-        }
-        Kategori k = new Kategori(0, txtNama.getText());
         if (service.tambahKategori(k)) {
-            JOptionPane.showMessageDialog(this, "Data tersimpan!");
-            clear();
+            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil disimpan");
             loadData();
+            clear();
         } else {
-            JOptionPane.showMessageDialog(this, "Gagal menyimpan data!");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan data!");
         }
     }
 
-    private void ubah() {
-        if(txtId.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Pilih data di tabel terlebih dahulu!");
+    private void ubahData() {
+        if (table.getSelectedRow() < 0) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Pilih data yang akan diubah!");
             return;
         }
 
-        int selectedRow = table.getSelectedRow();
-        if(selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih baris data di tabel terlebih dahulu!");
-            return;
-        }
-
-        String oldNama = table.getValueAt(selectedRow, 1).toString();
-        String newNama = txtNama.getText();
-
-        if (oldNama.equals(newNama)) {
-            JOptionPane.showMessageDialog(this, "Tidak ada perubahan data.");
-            return;
-        }
-
-        Kategori k = new Kategori(Integer.parseInt(txtId.getText()), newNama);
+        Kategori k = new Kategori();
+        try {
+            k.setIdKategori(Integer.parseInt(txtId.getText()));
+        } catch (Exception e) {}
+        k.setNamaKategori(txtNama.getText().trim());
+        
         if (service.updateKategori(k)) {
-            JOptionPane.showMessageDialog(this, "Data berhasil diperbarui!\n\nNama Kategori: " + oldNama + " -> " + newNama, "Informasi Perubahan", JOptionPane.INFORMATION_MESSAGE);
-            clear();
+            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil diubah");
             loadData();
+            clear();
         } else {
-            JOptionPane.showMessageDialog(this, "Gagal mengubah data!");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengubah data!");
         }
     }
 
-    private void hapus() {
-        if(txtId.getText().isEmpty()) return;
-        int id = Integer.parseInt(txtId.getText());
-        if (service.hapusKategori(id)) {
-            JOptionPane.showMessageDialog(this, "Data dihapus!");
-            clear();
+    private void hapusData() {
+        if (table.getSelectedRow() < 0) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Pilih data yang akan dihapus!");
+            return;
+        }
+
+        int idKat = 0;
+        try {
+            idKat = Integer.parseInt(txtId.getText());
+        } catch (Exception e) {}
+
+        if (service.hapusKategori(idKat)) {
+            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil dihapus");
             loadData();
+            clear();
         } else {
-            JOptionPane.showMessageDialog(this, "Gagal menghapus data! Mungkin data sedang digunakan di tabel Barang.");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menghapus data!");
         }
     }
 }

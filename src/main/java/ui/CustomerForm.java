@@ -2,11 +2,13 @@ package ui;
 
 import model.Customer;
 import service.CustomerService;
+import ui.components.Toast;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
+import ui.components.RoundedPanel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,8 +16,7 @@ import java.util.List;
 
 public class CustomerForm extends JPanel {
 
-    private JTextField txtId, txtNama, txtTelepon;
-    private JTextArea txtAlamat;
+    private JTextField txtId, txtNama, txtAlamat, txtTelepon;
     private JButton btnSimpan, btnUbah, btnHapus, btnClear;
     private JTable table;
     private DefaultTableModel tableModel;
@@ -23,229 +24,171 @@ public class CustomerForm extends JPanel {
 
     public CustomerForm() {
         service = new CustomerService();
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(20, 20));
         setBackground(ThemeUtil.BG_SOFT);
-        setBorder(new EmptyBorder(30, 30, 30, 30));
+        setBorder(new EmptyBorder(20, 30, 20, 30));
         initComponents();
         loadData();
-        clear(); // Untuk men-generate ID awal
+        clear();
     }
 
     private void initComponents() {
-        // Title
-        JLabel lblTitle = new JLabel("Manajemen Data Customer");
+        JLabel lblTitle = new JLabel("Manajemen Customer");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.TEXT_PRIMARY);
-        lblTitle.setBorder(new EmptyBorder(0, 0, 20, 0));
+        lblTitle.setForeground(ThemeUtil.OCEAN_BLUE);
         add(lblTitle, BorderLayout.NORTH);
 
-        // Input Panel
-        JPanel panelTop = new JPanel(new BorderLayout(10, 10));
-        panelTop.setOpaque(false);
+        RoundedPanel panelTop = ThemeUtil.createCardPanel();
+        panelTop.setLayout(new BorderLayout(10, 10));
 
         JPanel panelInput = new JPanel(new GridBagLayout());
         panelInput.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(5, 5, 5, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        gbc.gridx = 0; gbc.gridy = 0;
-        JLabel lblId = new JLabel("ID Customer:");
-        lblId.setFont(ThemeUtil.FONT_REGULAR);
-        lblId.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblId, gbc);
-        txtId = new JTextField(20);
-        ThemeUtil.styleTextField(txtId);
-        txtId.setEditable(false);
-        gbc.gridx = 1;
-        panelInput.add(txtId, gbc);
+        gbc.gridx = 0; gbc.gridy = 0; addLabel(panelInput, "ID Customer:", gbc);
+        txtId = new JTextField(20); ThemeUtil.styleTextField(txtId); txtId.setEditable(false);
+        gbc.gridx = 1; panelInput.add(txtId, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1;
-        JLabel lblNama = new JLabel("Nama Customer:");
-        lblNama.setFont(ThemeUtil.FONT_REGULAR);
-        lblNama.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblNama, gbc);
-        txtNama = new JTextField(20);
-        ThemeUtil.styleTextField(txtNama);
-        gbc.gridx = 1;
-        panelInput.add(txtNama, gbc);
+        gbc.gridx = 0; gbc.gridy = 1; addLabel(panelInput, "Nama Customer:", gbc);
+        txtNama = new JTextField(20); ThemeUtil.styleTextField(txtNama);
+        gbc.gridx = 1; panelInput.add(txtNama, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2;
-        JLabel lblTelepon = new JLabel("Telepon:");
-        lblTelepon.setFont(ThemeUtil.FONT_REGULAR);
-        lblTelepon.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblTelepon, gbc);
-        txtTelepon = new JTextField(20);
-        ThemeUtil.styleTextField(txtTelepon);
-        gbc.gridx = 1;
-        panelInput.add(txtTelepon, gbc);
+        gbc.gridx = 0; gbc.gridy = 2; addLabel(panelInput, "Alamat:", gbc);
+        txtAlamat = new JTextField(20); ThemeUtil.styleTextField(txtAlamat);
+        gbc.gridx = 1; panelInput.add(txtAlamat, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 3;
-        JLabel lblAlamat = new JLabel("Alamat:");
-        lblAlamat.setFont(ThemeUtil.FONT_REGULAR);
-        lblAlamat.setForeground(ThemeUtil.TEXT_SECONDARY);
-        panelInput.add(lblAlamat, gbc);
-        txtAlamat = new JTextArea(3, 20);
-        txtAlamat.setFont(ThemeUtil.FONT_REGULAR);
-        txtAlamat.setForeground(ThemeUtil.TEXT_PRIMARY);
-        txtAlamat.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ThemeUtil.BORDER_COLOR, 1, true),
-            new EmptyBorder(8, 12, 8, 12)
-        ));
-        gbc.gridx = 1;
-        panelInput.add(new JScrollPane(txtAlamat), gbc);
+        gbc.gridx = 0; gbc.gridy = 3; addLabel(panelInput, "No Telepon:", gbc);
+        txtTelepon = new JTextField(20); ThemeUtil.styleTextField(txtTelepon);
+        gbc.gridx = 1; panelInput.add(txtTelepon, gbc);
 
-        // Button Panel
         JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panelBtn.setOpaque(false);
-        btnSimpan = new JButton("Simpan Data");
-        ThemeUtil.styleButton(btnSimpan, new Color(16, 185, 129));
+        btnSimpan = new JButton("Simpan"); ThemeUtil.styleButton(btnSimpan, ThemeUtil.SUCCESS_COLOR);
+        btnUbah = new JButton("Ubah"); ThemeUtil.styleButton(btnUbah, ThemeUtil.OCEAN_BLUE);
+        btnHapus = new JButton("Hapus"); ThemeUtil.styleButton(btnHapus, ThemeUtil.ERROR_COLOR);
+        btnClear = new JButton("Clear"); ThemeUtil.styleButton(btnClear, ThemeUtil.TEXT_SECONDARY);
+
+        panelBtn.add(btnSimpan); panelBtn.add(btnUbah); panelBtn.add(btnHapus); panelBtn.add(btnClear);
+
+        panelTop.add(panelInput, BorderLayout.CENTER);
+        panelTop.add(panelBtn, BorderLayout.SOUTH);
         
-        btnUbah = new JButton("Simpan Perubahan");
-        ThemeUtil.styleButton(btnUbah, new Color(59, 130, 246));
-        
-        btnHapus = new JButton("Hapus Data");
-        ThemeUtil.styleButton(btnHapus, new Color(239, 68, 68));
-        
-        btnClear = new JButton("Bersihkan Form");
-        ThemeUtil.styleButton(btnClear, new Color(100, 116, 139));
+        add(panelTop, BorderLayout.NORTH);
 
-        panelBtn.add(btnSimpan);
-        panelBtn.add(btnUbah);
-        panelBtn.add(btnHapus);
-        panelBtn.add(btnClear);
-        
-        // Initial state for buttons (Option B UX)
-        btnUbah.setEnabled(false);
-        btnHapus.setEnabled(false);
-        btnSimpan.setEnabled(true);
+        RoundedPanel panelBottom = ThemeUtil.createCardPanel();
+        panelBottom.setLayout(new BorderLayout());
 
-        JPanel wrapInput = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        wrapInput.setOpaque(false);
-        wrapInput.add(panelInput);
-
-        panelTop.add(wrapInput, BorderLayout.NORTH);
-        panelTop.add(panelBtn, BorderLayout.CENTER);
-
-        JPanel wrapTop = new JPanel(new BorderLayout());
-        wrapTop.setOpaque(false);
-        wrapTop.add(panelTop, BorderLayout.WEST);
-
-        // Table
-        tableModel = new DefaultTableModel(new String[]{"ID Customer", "Nama", "Telepon", "Alamat"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+        tableModel = new DefaultTableModel(new String[]{"ID Customer", "Nama Customer", "Alamat", "No Telepon"}, 0) {
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         table = new JTable(tableModel);
-        
         JScrollPane scrollPane = new JScrollPane(table);
         ThemeUtil.styleTable(table, scrollPane);
 
-        JPanel centerPanel = new JPanel(new BorderLayout(0, 20));
-        centerPanel.setOpaque(false);
-        centerPanel.add(wrapTop, BorderLayout.NORTH);
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        panelBottom.add(scrollPane, BorderLayout.CENTER);
+        add(panelBottom, BorderLayout.CENTER);
 
-        add(centerPanel, BorderLayout.CENTER);
-
-        // Actions
-        btnSimpan.addActionListener(e -> simpan());
-        btnUbah.addActionListener(e -> ubah());
-        btnHapus.addActionListener(e -> hapus());
+        // Events
+        btnSimpan.addActionListener(e -> simpanData());
+        btnUbah.addActionListener(e -> ubahData());
+        btnHapus.addActionListener(e -> hapusData());
         btnClear.addActionListener(e -> clear());
 
         table.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent me) {
+            public void mouseClicked(MouseEvent e) {
                 int row = table.getSelectedRow();
-                if(row != -1) {
-                    txtId.setText(table.getValueAt(row, 0).toString());
-                    txtNama.setText(table.getValueAt(row, 1).toString());
-                    txtTelepon.setText(table.getValueAt(row, 2).toString());
-                    txtAlamat.setText(table.getValueAt(row, 3).toString());
-                    
-                    // Option B UX: Lock Simpan, Unlock Ubah & Hapus
-                    btnSimpan.setEnabled(false);
-                    btnUbah.setEnabled(true);
-                    btnHapus.setEnabled(true);
+                if (row >= 0) {
+                    txtId.setText(tableModel.getValueAt(row, 0).toString());
+                    txtId.setEditable(false);
+                    txtNama.setText(tableModel.getValueAt(row, 1).toString());
+                    txtAlamat.setText(tableModel.getValueAt(row, 2).toString());
+                    txtTelepon.setText(tableModel.getValueAt(row, 3).toString());
                 }
             }
         });
+    }
+
+    private void addLabel(JPanel p, String text, GridBagConstraints gbc) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(ThemeUtil.FONT_REGULAR);
+        lbl.setForeground(ThemeUtil.TEXT_SECONDARY);
+        p.add(lbl, gbc);
     }
 
     private void loadData() {
         tableModel.setRowCount(0);
         List<Customer> list = service.getAllCustomer();
         for (Customer c : list) {
-            tableModel.addRow(new Object[]{c.getIdCustomer(), c.getNamaCustomer(), c.getTelepon(), c.getAlamat()});
+            tableModel.addRow(new Object[]{c.getIdCustomer(), c.getNamaCustomer(), c.getAlamat(), c.getTelepon()});
         }
     }
 
     private void clear() {
         txtId.setText(service.generateId());
+        txtId.setEditable(false);
         txtNama.setText("");
-        txtTelepon.setText("");
         txtAlamat.setText("");
-        txtNama.requestFocus();
+        txtTelepon.setText("");
         table.clearSelection();
+    }
+
+    private void simpanData() {
+        if (txtNama.getText().trim().isEmpty()) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Nama Customer tidak boleh kosong!");
+            return;
+        }
+
+        Customer c = new Customer();
+        c.setIdCustomer(txtId.getText());
+        c.setNamaCustomer(txtNama.getText().trim());
+        c.setAlamat(txtAlamat.getText().trim());
+        c.setTelepon(txtTelepon.getText().trim());
         
-        // Option B UX: Reset buttons
-        btnSimpan.setEnabled(true);
-        btnUbah.setEnabled(false);
-        btnHapus.setEnabled(false);
-    }
-
-    private void simpan() {
-        Customer c = new Customer(txtId.getText(), txtNama.getText(), txtAlamat.getText(), txtTelepon.getText());
         if (service.tambahCustomer(c)) {
-            JOptionPane.showMessageDialog(this, "Data tersimpan!");
-            clear();
+            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil disimpan");
             loadData();
+            clear();
         } else {
-            JOptionPane.showMessageDialog(this, "Gagal menyimpan data!");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan data!");
         }
     }
 
-    private void ubah() {
-        if(txtId.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Pilih data di tabel terlebih dahulu!");
+    private void ubahData() {
+        if (table.getSelectedRow() < 0) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Pilih data yang akan diubah!");
             return;
         }
 
-        int selectedRow = table.getSelectedRow();
-        if(selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih baris data di tabel terlebih dahulu!");
-            return;
-        }
-
-        String oldNama = table.getValueAt(selectedRow, 1).toString();
-        String oldTelp = table.getValueAt(selectedRow, 2).toString();
-        String oldAlamat = table.getValueAt(selectedRow, 3).toString();
-
-        Customer c = new Customer(txtId.getText(), txtNama.getText(), txtAlamat.getText(), txtTelepon.getText());
+        Customer c = new Customer();
+        c.setIdCustomer(txtId.getText());
+        c.setNamaCustomer(txtNama.getText().trim());
+        c.setAlamat(txtAlamat.getText().trim());
+        c.setTelepon(txtTelepon.getText().trim());
+        
         if (service.updateCustomer(c)) {
-            String msg = "Data Customer berhasil diperbarui!\n\n"
-                       + "Nama: " + oldNama + " -> " + c.getNamaCustomer() + "\n"
-                       + "Telepon: " + oldTelp + " -> " + c.getTelepon() + "\n"
-                       + "Alamat: " + oldAlamat + " -> " + c.getAlamat();
-            JOptionPane.showMessageDialog(this, msg, "Informasi Perubahan", JOptionPane.INFORMATION_MESSAGE);
-            clear();
+            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil diubah");
             loadData();
+            clear();
         } else {
-            JOptionPane.showMessageDialog(this, "Gagal mengubah data!");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengubah data!");
         }
     }
 
-    private void hapus() {
-        if(txtId.getText().isEmpty()) return;
+    private void hapusData() {
+        if (table.getSelectedRow() < 0) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Pilih data yang akan dihapus!");
+            return;
+        }
+
         if (service.hapusCustomer(txtId.getText())) {
-            JOptionPane.showMessageDialog(this, "Data dihapus!");
-            clear();
+            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil dihapus");
             loadData();
+            clear();
         } else {
-            JOptionPane.showMessageDialog(this, "Gagal menghapus data!");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menghapus data!");
         }
     }
 }
