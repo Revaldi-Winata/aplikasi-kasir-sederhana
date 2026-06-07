@@ -5,34 +5,38 @@
 package model;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
+ * Model untuk header transaksi penjualan.
+ * Satu Penjualan memiliki banyak DetailPenjualan (1-to-many).
  *
  * @author Revaldi
  */
 public class Penjualan {
 
     private int idJual;
+    private String noFaktur;
     private Date tglTransaksi;
     private String idCustomer;
-    private String idBarang;
-    private int jumlahBeli;
     private double totalBayar;
     private int idUser;
 
-    // Display-only fields (not persisted, used for JTable display)
+    // Detail items for this transaction
+    private List<DetailPenjualan> details = new ArrayList<>();
+
+    // Display-only field (not persisted, used for JTable display)
     private String namaCustomer;
-    private String namaBarang;
 
     public Penjualan() {
     }
 
-    public Penjualan(int idJual, Date tglTransaksi, String idCustomer, String idBarang, int jumlahBeli, double totalBayar, int idUser) {
+    public Penjualan(int idJual, String noFaktur, Date tglTransaksi, String idCustomer, double totalBayar, int idUser) {
         this.idJual = idJual;
+        this.noFaktur = noFaktur;
         this.tglTransaksi = tglTransaksi;
         this.idCustomer = idCustomer;
-        this.idBarang = idBarang;
-        this.jumlahBeli = jumlahBeli;
         this.totalBayar = totalBayar;
         this.idUser = idUser;
     }
@@ -43,6 +47,14 @@ public class Penjualan {
 
     public void setIdJual(int idJual) {
         this.idJual = idJual;
+    }
+
+    public String getNoFaktur() {
+        return noFaktur;
+    }
+
+    public void setNoFaktur(String noFaktur) {
+        this.noFaktur = noFaktur;
     }
 
     public Date getTglTransaksi() {
@@ -61,22 +73,6 @@ public class Penjualan {
         this.idCustomer = idCustomer;
     }
 
-    public String getIdBarang() {
-        return idBarang;
-    }
-
-    public void setIdBarang(String idBarang) {
-        this.idBarang = idBarang;
-    }
-
-    public int getJumlahBeli() {
-        return jumlahBeli;
-    }
-
-    public void setJumlahBeli(int jumlahBeli) {
-        this.jumlahBeli = jumlahBeli;
-    }
-
     public double getTotalBayar() {
         return totalBayar;
     }
@@ -93,6 +89,14 @@ public class Penjualan {
         this.idUser = idUser;
     }
 
+    public List<DetailPenjualan> getDetails() {
+        return details;
+    }
+
+    public void setDetails(List<DetailPenjualan> details) {
+        this.details = details;
+    }
+
     public String getNamaCustomer() {
         return namaCustomer;
     }
@@ -101,16 +105,8 @@ public class Penjualan {
         this.namaCustomer = namaCustomer;
     }
 
-    public String getNamaBarang() {
-        return namaBarang;
-    }
-
-    public void setNamaBarang(String namaBarang) {
-        this.namaBarang = namaBarang;
-    }
-
     @Override
     public String toString() {
-        return "Transaksi #" + idJual;
+        return "Transaksi #" + idJual + " (" + noFaktur + ")";
     }
 }

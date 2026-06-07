@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 24 Bulan Mei 2026 pada 15.56
+-- Waktu pembuatan: 07 Jun 2026 pada 10.13
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -68,12 +68,26 @@ CREATE TABLE `tb_kategori` (
 
 CREATE TABLE `tb_penjualan` (
   `id_jual` int(11) NOT NULL,
+  `no_faktur` varchar(20) NOT NULL,
   `tgl_transaksi` date NOT NULL,
   `id_customer` varchar(10) DEFAULT NULL,
-  `id_barang` varchar(10) DEFAULT NULL,
-  `jumlah_beli` int(11) NOT NULL,
   `total_bayar` double NOT NULL,
   `id_user` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `tb_detail_penjualan`
+--
+
+CREATE TABLE `tb_detail_penjualan` (
+  `id_detail` int(11) NOT NULL,
+  `id_jual` int(11) NOT NULL,
+  `id_barang` varchar(10) NOT NULL,
+  `harga_satuan` double NOT NULL,
+  `jumlah_beli` int(11) NOT NULL,
+  `subtotal` double NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -126,9 +140,17 @@ ALTER TABLE `tb_kategori`
 --
 ALTER TABLE `tb_penjualan`
   ADD PRIMARY KEY (`id_jual`),
+  ADD UNIQUE KEY `no_faktur` (`no_faktur`),
   ADD KEY `id_customer` (`id_customer`),
-  ADD KEY `id_barang` (`id_barang`),
   ADD KEY `id_user` (`id_user`);
+
+--
+-- Indeks untuk tabel `tb_detail_penjualan`
+--
+ALTER TABLE `tb_detail_penjualan`
+  ADD PRIMARY KEY (`id_detail`),
+  ADD KEY `id_jual` (`id_jual`),
+  ADD KEY `id_barang` (`id_barang`);
 
 --
 -- Indeks untuk tabel `tb_user`
@@ -154,6 +176,12 @@ ALTER TABLE `tb_penjualan`
   MODIFY `id_jual` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT untuk tabel `tb_detail_penjualan`
+--
+ALTER TABLE `tb_detail_penjualan`
+  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `tb_user`
 --
 ALTER TABLE `tb_user`
@@ -174,8 +202,15 @@ ALTER TABLE `tb_barang`
 --
 ALTER TABLE `tb_penjualan`
   ADD CONSTRAINT `tb_penjualan_ibfk_1` FOREIGN KEY (`id_customer`) REFERENCES `tb_customer` (`id_customer`),
-  ADD CONSTRAINT `tb_penjualan_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `tb_barang` (`id_barang`),
-  ADD CONSTRAINT `tb_penjualan_ibfk_3` FOREIGN KEY (`id_user`) REFERENCES `tb_user` (`id_user`);
+  ADD CONSTRAINT `tb_penjualan_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `tb_user` (`id_user`);
+
+--
+-- Ketidakleluasaan untuk tabel `tb_detail_penjualan`
+--
+ALTER TABLE `tb_detail_penjualan`
+  ADD CONSTRAINT `tb_detail_penjualan_ibfk_1` FOREIGN KEY (`id_jual`) REFERENCES `tb_penjualan` (`id_jual`),
+  ADD CONSTRAINT `tb_detail_penjualan_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `tb_barang` (`id_barang`);
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
