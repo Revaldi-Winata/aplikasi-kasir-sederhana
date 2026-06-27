@@ -43,10 +43,6 @@ public class LogTransaksiForm extends JPanel {
         // --- Header ---
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        JLabel lblTitle = new JLabel("Log Transaksi");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(ThemeUtil.TEXT_PRIMARY);
-        headerPanel.add(lblTitle, BorderLayout.WEST);
 
         btnCetak = new JButton("Cetak Ulang Faktur");
         btnCetak.setFont(new Font("Segoe UI", Font.BOLD, 14));

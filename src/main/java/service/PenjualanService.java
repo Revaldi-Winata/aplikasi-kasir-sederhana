@@ -19,18 +19,21 @@ import java.util.List;
  */
 public class PenjualanService {
 
-    /**
-     * Menyimpan satu transaksi penjualan beserta semua detail item-nya
-     * dalam satu database transaction (atomic).
-     *
-     * Flow:
-     * 1. Generate no_faktur
-     * 2. INSERT header ke tb_penjualan → ambil generated id_jual
-     * 3. Loop setiap detail:
-     *    a. UPDATE stok tb_barang (dengan guard stok >= jumlah)
-     *    b. INSERT ke tb_detail_penjualan
-     * 4. Commit jika semua berhasil, rollback jika ada kegagalan
-     */
+    // ==========================================
+    // [Logika Inti] SIMPAN TRANSAKSI (ATOMIC)
+    // ==========================================
+    // Fungsi ini dipanggil saat kasir menekan tombol "Simpan Transaksi" di UI PenjualanForm.
+    // Menggunakan teknik "Database Transaction" agar jika di tengah jalan mati lampu/error, data tidak jadi tersimpan (konsisten).
+    //
+    // Alur Kerjanya:
+    // 1. Matikan mode simpan-otomatis (AutoCommit = false)
+    // 2. Buat Nomor Struk baru (misal: FK-20231024-0001)
+    // 3. Simpan data global (Tanggal, Kasir, Customer, Total Belanja) ke tb_penjualan (tabel INDUK)
+    // 4. Ambil ID Penjualan yang baru saja terbentuk dari database
+    // 5. Looping untuk setiap barang yang ada di dalam keranjang:
+    //    a. Kurangi sisa stok barang di tb_barang. Jika stok ternyata kurang, BATALKAN SEMUA (Rollback)!
+    //    b. Simpan rincian barang tersebut ke tb_detail_penjualan (tabel ANAK)
+    // 6. Jika semua langkah di atas aman, BARU SIMPAN PERMANEN ke Database (Commit).
     public boolean simpanTransaksi(Penjualan p) throws Exception {
         Connection conn = null;
         try {
@@ -41,53 +44,56 @@ public class PenjualanService {
             String noFaktur = generateNoFaktur(conn);
             p.setNoFaktur(noFaktur);
 
-            // 1. INSERT header ke tb_penjualan
+            // 1. [Simpan Induk] Masukkan nota penjualan (header) ke tb_penjualan
             String sqlHeader = "INSERT INTO tb_penjualan (no_faktur, tgl_transaksi, id_customer, total_bayar, id_user) VALUES (?,?,?,?,?)";
             int idJual;
             try (PreparedStatement psHeader = conn.prepareStatement(sqlHeader, Statement.RETURN_GENERATED_KEYS)) {
                 psHeader.setString(1, noFaktur);
-                psHeader.setTimestamp(2, new java.sql.Timestamp(p.getTglTransaksi().getTime()));
+                psHeader.setTimestamp(2, new java.sql.Timestamp(p.getTglTransaksi().getTime())); // Simpan tanggal & jam saat ini
                 psHeader.setString(3, p.getIdCustomer());
                 psHeader.setDouble(4, p.getTotalBayar());
                 psHeader.setInt(5, p.getIdUser());
-                psHeader.executeUpdate();
+                psHeader.executeUpdate(); // Jalankan SQL
 
+                // [Mekanisme Lanjut] Ambil "id_jual" (Auto Increment) yang baru saja tercipta di MySQL
                 try (ResultSet generatedKeys = psHeader.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        idJual = generatedKeys.getInt(1);
+                        idJual = generatedKeys.getInt(1); // Simpan ID ini untuk tabel detail nanti
                         p.setIdJual(idJual);
                     } else {
-                        throw new Exception("Gagal mendapatkan ID transaksi!");
+                        throw new Exception("Gagal mendapatkan ID transaksi!"); // Jika gagal, paksa error
                     }
                 }
             }
 
-            // 2. Loop setiap detail item
+            // 2. [Simpan Anak] Looping satu per satu barang yang ada di dalam keranjang
             String sqlStok = "UPDATE tb_barang SET stok = stok - ? WHERE id_barang = ? AND stok >= ?";
-            String sqlDetail = "INSERT INTO tb_detail_penjualan (id_jual, id_barang, harga_satuan, jumlah_beli, subtotal) VALUES (?,?,?,?,?)";
+            String sqlDetail = "INSERT INTO tb_detail_penjualan (id_jual, id_barang, harga_beli, harga_satuan, jumlah_beli, subtotal) VALUES (?,?,?,?,?,?)";
 
             for (DetailPenjualan detail : p.getDetails()) {
-                // 2a. Update stok dengan guard
+                // 2a. [Keamanan Data] Kurangi stok barang, tapi pastikan sisa stok (di database) cukup dengan pesanan!
                 try (PreparedStatement psStok = conn.prepareStatement(sqlStok)) {
-                    psStok.setInt(1, detail.getJumlahBeli());
+                    psStok.setInt(1, detail.getJumlahBeli()); // Stok akan dikurangi sebanyak yg dibeli
                     psStok.setString(2, detail.getIdBarang());
-                    psStok.setInt(3, detail.getJumlahBeli());
-                    int affectedRows = psStok.executeUpdate();
+                    psStok.setInt(3, detail.getJumlahBeli()); // Syarat: sisa stok aslinya HARUS >= qty yg dibeli
+                    
+                    int affectedRows = psStok.executeUpdate(); // Jika stok kurang, hasilnya 0 (gagal eksekusi)
                     if (affectedRows == 0) {
-                        conn.rollback();
+                        conn.rollback(); // [BATAL!] Batalkan seluruh penyimpanan transaksi, termasuk nota induknya!
                         String namaBarang = detail.getNamaBarang() != null ? detail.getNamaBarang() : detail.getIdBarang();
-                        throw new Exception("Stok tidak mencukupi untuk barang: " + namaBarang);
+                        throw new Exception("Stok tidak mencukupi untuk barang: " + namaBarang); // Lempar pesan error ke layar
                     }
                 }
 
-                // 2b. Insert detail
+                // 2b. [Catat Rincian] Jika stok aman, catat barang ini ke dalam tabel detail_penjualan
                 try (PreparedStatement psDetail = conn.prepareStatement(sqlDetail)) {
-                    psDetail.setInt(1, idJual);
+                    psDetail.setInt(1, idJual); // Masukkan id_jual (dari tabel induk) untuk mengaitkannya
                     psDetail.setString(2, detail.getIdBarang());
-                    psDetail.setDouble(3, detail.getHargaSatuan());
-                    psDetail.setInt(4, detail.getJumlahBeli());
-                    psDetail.setDouble(5, detail.getSubtotal());
-                    psDetail.executeUpdate();
+                    psDetail.setDouble(3, detail.getHargaBeli());
+                    psDetail.setDouble(4, detail.getHargaSatuan());
+                    psDetail.setInt(5, detail.getJumlahBeli());
+                    psDetail.setDouble(6, detail.getSubtotal());
+                    psDetail.executeUpdate(); // Jalankan SQL
                 }
             }
 
@@ -188,10 +194,8 @@ public class PenjualanService {
         }
     }
 
-    /**
-     * Generate nomor faktur dengan format: FK-yyyyMMdd-XXXX
-     * Sequence di-reset per hari.
-     */
+    // [Logika Helper] Generate nomor faktur dinamis dengan format: FK-yyyyMMdd-XXXX (cth: FK-20231024-0001)
+    // Angka XXXX di akhir (Sequence) akan di-reset otomatis mulai dari 0001 setiap berganti hari baru.
     private String generateNoFaktur(Connection conn) throws SQLException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         String today = sdf.format(new java.util.Date());

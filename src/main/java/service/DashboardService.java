@@ -67,6 +67,21 @@ public class DashboardService {
         return total;
     }
 
+    public double getTotalKeuntungan() {
+        double total = 0;
+        String query = "SELECT SUM((harga_satuan - harga_beli) * jumlah_beli) FROM tb_detail_penjualan";
+        try (Connection conn = Koneksi.getKoneksi();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                total = rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return total;
+    }
+
     public java.util.List<java.util.Map<String, Object>> getRecentTransactions(int limit) {
         java.util.List<java.util.Map<String, Object>> list = new java.util.ArrayList<>();
         String query = "SELECT p.tgl_transaksi, p.no_faktur, c.nama_customer, p.total_bayar " +

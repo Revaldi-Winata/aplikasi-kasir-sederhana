@@ -21,17 +21,21 @@ Toko Berkah Jaya handles daily store operations. The system tracks inventory, ca
 - **Role-based access**: Administrators have full system access. Cashiers can only access the point of sale, dashboard, and their own profile.
 - **Inventory tracking**: Add, update, and remove products. The system tracks stock levels and product categories.
 - **Customer database**: Keep records of loyal customers.
-- **Point of sale**: Process transactions, calculate totals with automatic invoice number generation, and print receipts as PDF files.
-- **Transaction logs**: View the entire history of past sales.
-- **User profiles**: Staff can update their own account details without needing an administrator.
+- **Point of sale**: Process transactions, calculate totals with automatic invoice number generation, print physical receipts or PDFs, and display dynamic invoice previews.
+- **Sales Reports & Excel Export**: Interactive sales reporting module supporting filters by date range, product categories, and customer names. Equipped with manual row selection and instant data export to Microsoft Excel (`.xlsx`) via Apache POI.
+- **Transaction logs**: Track stock levels and transaction activities in real-time.
+- **User profiles**: Staff can update their own account details (username, password, name) independently.
 
 ## Tech stack
 
-- **Language**: Java (JDK 17+)
-- **GUI framework**: Java Swing and AWT
-- **Database**: MySQL
+- **Language**: Java (JDK 11+ / compatible with JDK 17)
+- **GUI framework**: Java Swing (FlatLaf Look and Feel)
+- **Database**: MySQL (RDBMS)
 - **Build tool**: Apache Maven
-- **PDF generation**: Apache PDFBox
+- **External Libraries**:
+  - Apache POI (Excel report export `.xlsx`)
+  - OpenPDF / PDFBox (PDF invoice generation)
+  - MySQL Connector/J (MySQL JDBC driver)
 
 ## Prerequisites
 

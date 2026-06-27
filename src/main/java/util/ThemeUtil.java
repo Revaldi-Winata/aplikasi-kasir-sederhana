@@ -18,22 +18,23 @@ import java.awt.event.MouseEvent;
 public class ThemeUtil {
 
     // === NEW COLOR PALETTE (Toko Berkah Jaya) ===
-    public static final Color OCEAN_BLUE = new Color(14, 116, 144);   // Cyan-700 / Ocean
-    public static final Color OCEAN_BLUE_DARK = new Color(21, 94, 117); // Cyan-800
+    public static final Color OCEAN_BLUE = new Color(59, 130, 246);   // Blue-500
+    public static final Color OCEAN_BLUE_DARK = new Color(37, 99, 235); // Blue-600
     public static final Color SKY_BLUE = new Color(14, 165, 233);     // Sky-500
-    public static final Color SUCCESS_COLOR = new Color(16, 185, 129); // Emerald-500 / Lush Green
+    public static final Color SUCCESS_COLOR = new Color(16, 185, 129); // Emerald-500
     public static final Color SUCCESS_HOVER = new Color(5, 150, 105);  // Emerald-600
     public static final Color ERROR_COLOR = new Color(239, 68, 68);    // Red-500
     public static final Color ERROR_HOVER = new Color(220, 38, 38);    // Red-600
+    public static final Color WARNING_COLOR = new Color(249, 115, 22); // Orange-500 (CTA)
     
-    public static final Color TEXT_PRIMARY = new Color(15, 23, 42);   // Slate-900
-    public static final Color TEXT_SECONDARY = new Color(71, 85, 105); // Slate-600
-    public static final Color BORDER_COLOR = new Color(203, 213, 225); // Slate-300
+    public static final Color TEXT_PRIMARY = new Color(30, 41, 59);   // Slate-800
+    public static final Color TEXT_SECONDARY = new Color(100, 116, 139); // Slate-500
+    public static final Color BORDER_COLOR = new Color(226, 232, 240); // Slate-200
     public static final Color BORDER_FOCUS = SKY_BLUE;
     
     public static final Color BG_WHITE = Color.WHITE;
     public static final Color BG_SOFT = new Color(248, 250, 252);     // Slate-50
-    public static final Color HOVER_BG = new Color(240, 249, 255);    // Sky-50 (Very light blue for zebra stripe)
+    public static final Color HOVER_BG = new Color(241, 245, 249);    // Slate-100
 
     public static final Font FONT_REGULAR = new Font("Segoe UI", Font.PLAIN, 14);
     public static final Font FONT_BOLD = new Font("Segoe UI", Font.BOLD, 14);
@@ -48,55 +49,62 @@ public class ThemeUtil {
     }
 
     /**
-     * Styles a JTextField to look modern with rounded borders and focus states.
+     * Adds a DocumentFilter to prevent non-numeric input.
      */
-    public static void styleTextField(JTextField field) {
-        field.setFont(FONT_REGULAR);
-        field.setForeground(TEXT_PRIMARY);
-        field.setBackground(BG_WHITE);
-        field.setCaretColor(TEXT_PRIMARY);
-        
-        Border defaultBorder = BorderFactory.createCompoundBorder(
-            new RoundedBorder(BORDER_COLOR, 8),
-            new EmptyBorder(6, 10, 6, 10)
-        );
-        Border focusBorder = BorderFactory.createCompoundBorder(
-            new RoundedBorder(BORDER_FOCUS, 8),
-            new EmptyBorder(6, 10, 6, 10)
-        );
-        
-        field.setBorder(defaultBorder);
-        
-        field.addFocusListener(new FocusAdapter() {
+    public static void makeNumberOnly(JTextField textField) {
+        // Disabled per user request: allow UI validation to take over
+    }
+
+    /**
+     * Formats the field as currency (Rp...) in real-time as the user types.
+     */
+    public static void makeCurrencyField(JTextField textField) {
+        textField.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
-            public void focusGained(FocusEvent e) {
-                field.setBorder(focusBorder);
-            }
-            @Override
-            public void focusLost(FocusEvent e) {
-                field.setBorder(defaultBorder);
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                int code = e.getKeyCode();
+                // Ignore navigation keys
+                if (code == java.awt.event.KeyEvent.VK_LEFT || 
+                    code == java.awt.event.KeyEvent.VK_RIGHT || 
+                    code == java.awt.event.KeyEvent.VK_UP || 
+                    code == java.awt.event.KeyEvent.VK_DOWN) {
+                    return;
+                }
+                
+                String text = textField.getText().replace("Rp", "").replace(".", "").trim();
+                if (!text.isEmpty()) {
+                    try {
+                        double parsed = Double.parseDouble(text);
+                        String formatted = util.Formatter.formatRupiah(parsed);
+                        if (!textField.getText().equals(formatted)) {
+                            textField.setText(formatted);
+                        }
+                    } catch (NumberFormatException ex) {
+                        // Not a valid number, skip formatting and let ValidationUtil show error
+                    }
+                } else {
+                    if (!textField.getText().isEmpty()) {
+                        textField.setText("");
+                    }
+                }
             }
         });
     }
 
-    /**
-     * Styles a JPasswordField.
-     */
-    public static void stylePasswordField(JPasswordField field) {
-        styleTextField(field);
+    public static void styleTextField(JTextField field) {
+        field.setFont(FONT_REGULAR);
     }
 
-    /**
-     * Styles a JComboBox.
-     */
+    public static void styleTextArea(JTextArea area) {
+        area.setFont(FONT_REGULAR);
+    }
+
+    public static void stylePasswordField(JPasswordField field) {
+        field.setFont(FONT_REGULAR);
+    }
+
     public static void styleComboBox(JComboBox<?> combo) {
         combo.setFont(FONT_REGULAR);
-        combo.setForeground(TEXT_PRIMARY);
-        combo.setBackground(BG_WHITE);
-        combo.setBorder(BorderFactory.createCompoundBorder(
-            new RoundedBorder(BORDER_COLOR, 8),
-            new EmptyBorder(3, 5, 3, 5)
-        ));
     }
 
     /**
@@ -105,94 +113,21 @@ public class ThemeUtil {
     public static void styleButton(JButton btn, Color bgColor) {
         btn.setBackground(bgColor);
         btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
         btn.setFont(FONT_BOLD);
-        btn.setBorder(new EmptyBorder(10, 20, 10, 20));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        // Calculate hover color (slightly darker)
-        Color hoverColor;
-        if (bgColor.equals(SUCCESS_COLOR)) hoverColor = SUCCESS_HOVER;
-        else if (bgColor.equals(ERROR_COLOR)) hoverColor = ERROR_HOVER;
-        else if (bgColor.equals(OCEAN_BLUE)) hoverColor = OCEAN_BLUE_DARK;
-        else hoverColor = bgColor.darker();
-
-        btn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if(btn.isEnabled()) btn.setBackground(hoverColor);
-            }
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if(btn.isEnabled()) btn.setBackground(bgColor);
-            }
-        });
+        // FlatLaf automatically handles hover colors!
     }
 
     /**
-     * Styles a JTable to look like a modern web table (Zebra Stripe).
+     * Styles a JTable to look like a modern web table.
      */
     public static void styleTable(JTable table, JScrollPane scrollPane) {
-        // Table Body
         table.setFont(FONT_REGULAR);
-        table.setForeground(TEXT_PRIMARY);
-        table.setRowHeight(35);
-        table.setPreferredScrollableViewportSize(new Dimension(table.getPreferredSize().width, 35 * 10));
-        table.setShowGrid(false);
-        table.setShowHorizontalLines(true);
-        table.setGridColor(new Color(226, 232, 240)); // Slate-200
-        table.setBackground(BG_WHITE);
-        table.setSelectionBackground(SKY_BLUE); 
-        table.setSelectionForeground(Color.WHITE);
+        table.setRowHeight(44); // 44px minimum touch target size
         
-        // Remove standard cell border and add padding & zebra stripe
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBorder(new EmptyBorder(0, 10, 0, 10)); // Inner padding
-                
-                if (isSelected) {
-                    c.setBackground(SKY_BLUE);
-                    c.setForeground(Color.WHITE);
-                    c.setFont(ThemeUtil.FONT_BOLD);
-                } else {
-                    // Zebra stripe
-                    if (row % 2 == 0) {
-                        c.setBackground(BG_WHITE);
-                    } else {
-                        c.setBackground(HOVER_BG); // Sangat soft blue
-                    }
-                    c.setForeground(TEXT_PRIMARY);
-                    c.setFont(ThemeUtil.FONT_REGULAR);
-                }
-                return c;
-            }
-        });
-
-        // Table Header
-        JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        header.setForeground(TEXT_SECONDARY);
-        header.setBackground(BG_WHITE);
-        header.setBorder(new MatteBorder(0, 0, 2, 0, BORDER_COLOR));
+        // Let FlatLaf handle the native zebra striping and hovering
+        table.putClientProperty("JTable.showAlternateRowColor", true);
         
-        ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
-        
-        // Wrap header renderer to add padding
-        final DefaultTableCellRenderer defaultRenderer = (DefaultTableCellRenderer) header.getDefaultRenderer();
-        header.setDefaultRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                ((JComponent) c).setBorder(BorderFactory.createCompoundBorder(
-                    ((JComponent) c).getBorder(),
-                    new EmptyBorder(10, 10, 10, 10)
-                ));
-                return c;
-            }
-        });
-
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(BG_WHITE);
     }

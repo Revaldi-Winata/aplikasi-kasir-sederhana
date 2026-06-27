@@ -16,7 +16,7 @@ public class Formatter {
     private static final NumberFormat RUPIAH_FORMAT = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
 
     public static String formatRupiah(double amount) {
-        return RUPIAH_FORMAT.format(amount);
+        return "Rp" + String.format(new Locale("id", "ID"), "%,d", (long) amount).replace(',', '.');
     }
 
     public static int parseIntSafe(String text) {
@@ -32,6 +32,17 @@ public class Formatter {
         if (isNullOrEmpty(text)) return 0.0;
         try {
             return Double.parseDouble(text.trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    public static double parseCurrencySafe(String text) {
+        if (isNullOrEmpty(text)) return 0.0;
+        String clean = text.replaceAll("[^\\d]", "");
+        if (clean.isEmpty()) return 0.0;
+        try {
+            return Double.parseDouble(clean);
         } catch (NumberFormatException e) {
             return 0.0;
         }

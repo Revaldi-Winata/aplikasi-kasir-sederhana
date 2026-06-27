@@ -7,43 +7,55 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import util.ThemeUtil;
 import java.awt.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 public class MenuUtama extends JFrame {
 
+    // [Logika] Menyimpan data user yang sedang login agar bisa digunakan (misal: cek level admin/kasir)
     private User loggedInUser;
+    
+    // [UI] Panel utama yang akan berganti-ganti isinya (Dashboard, Barang, dll)
     private JPanel mainContent;
+    // [Logika UI] CardLayout adalah penata letak yang menumpuk panel seperti kartu, 
+    // dan kita bisa memunculkan salah satunya berdasarkan nama/ID kartu.
     private CardLayout cardLayout;
     
-    // Panels
+    // [Deklarasi UI] Objek untuk masing-class form (layar) yang akan dimasukkan ke dalam CardLayout
     private DashboardForm dashboardForm;
     private KategoriForm kategoriForm;
     private BarangForm barangForm;
     private CustomerForm customerForm;
     private PenjualanForm penjualanForm;
     private LogTransaksiForm logTransaksiForm;
-    private ProfilForm profilForm;
     private UserForm userForm;
+    private ProfilForm profilForm;
+    private LaporanForm laporanForm;
     
     private JLabel lblTopTitle;
     private JButton btnUserDropdown;
     private java.util.List<JButton> sidebarButtons = new ArrayList<>();
 
+    // [Konstruktor] Dijalankan pertama kali saat MenuUtama dibuat dari LoginForm
+    // Menerima parameter 'user' dari hasil query database di LoginForm
     public MenuUtama(User user) {
         this.loggedInUser = user;
 
+        // [Konfigurasi Tampilan] Setup frame utama
         setTitle("Toko Berkah Jaya - Dashboard");
         setSize(1100, 750);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Aplikasi mati jika frame disilang
+        setLocationRelativeTo(null); // Memposisikan di tengah layar
         
+        // Mengatur ikon jendela
         ImageIcon logoIcon = ThemeUtil.getScaledImage("/images/logo.png", 64, 64);
         if (logoIcon != null) {
             setIconImage(logoIcon.getImage());
         }
 
+        // [Mekanisme] Memanggil perakitan komponen UI (Sidebar, Topbar, dan Konten)
         initComponents();
     }
 
@@ -83,14 +95,14 @@ public class MenuUtama extends JFrame {
 
         // --- Sidebar Menus ---
         JLabel lblMenuMaster = createMenuHeader("MAIN MENU");
-        JButton btnDashboard = createSidebarButton("Dashboard");
-        JButton btnKategori = createSidebarButton("Kelola Kategori");
-        JButton btnBarang = createSidebarButton("Kelola Barang");
-        JButton btnCustomer = createSidebarButton("Kelola Customer");
+        JButton btnDashboard = createSidebarButton("Dashboard", "layout-dashboard");
+        JButton btnKategori = createSidebarButton("Kelola Kategori", "tags");
+        JButton btnBarang = createSidebarButton("Kelola Barang", "package");
+        JButton btnCustomer = createSidebarButton("Kelola Customer", "users");
 
         JLabel lblMenuTransaksi = createMenuHeader("TRANSAKSI");
-        JButton btnPenjualan = createSidebarButton("Kasir / Penjualan");
-        JButton btnLogTransaksi = createSidebarButton("Log Transaksi");
+        JButton btnPenjualan = createSidebarButton("Kasir / Penjualan", "shopping-cart");
+        JButton btnLogTransaksi = createSidebarButton("Log Transaksi", "file-text");
 
         sideBar.add(btnDashboard);
         sideBar.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -107,8 +119,11 @@ public class MenuUtama extends JFrame {
         sideBar.add(btnPenjualan);
         sideBar.add(btnLogTransaksi);
         
+        JButton btnLaporan = createSidebarButton("Laporan Penjualan", "file-text");
+        sideBar.add(btnLaporan);
+        
         JLabel lblMenuPengaturan = createMenuHeader("PENGATURAN");
-        JButton btnKelolaUser = createSidebarButton("Kelola User");
+        JButton btnKelolaUser = createSidebarButton("Kelola User", "user");
         
         sideBar.add(Box.createRigidArea(new Dimension(0, 30)));
         sideBar.add(lblMenuPengaturan);
@@ -143,6 +158,13 @@ public class MenuUtama extends JFrame {
         btnUserDropdown.setContentAreaFilled(false);
         btnUserDropdown.setBorderPainted(false);
         btnUserDropdown.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        try {
+            com.formdev.flatlaf.extras.FlatSVGIcon userIcon = new com.formdev.flatlaf.extras.FlatSVGIcon("icons/circle-user-round.svg", 28, 28);
+            userIcon.setColorFilter(new com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter(color -> ThemeUtil.OCEAN_BLUE));
+            btnUserDropdown.setIcon(userIcon);
+            btnUserDropdown.setIconTextGap(10);
+        } catch (Exception e) {}
 
         JPopupMenu userMenu = new JPopupMenu();
         userMenu.setBackground(Color.WHITE);
@@ -189,6 +211,7 @@ public class MenuUtama extends JFrame {
         contentWrapper.add(topBar, BorderLayout.NORTH);
 
         // ==================== MAIN CONTENT (CENTER of wrapper) ====================
+        // [Mekanisme Layout] CardLayout bekerja dengan cara menumpuk panel.
         cardLayout = new CardLayout();
         mainContent = new JPanel(cardLayout) {
             @Override
@@ -205,17 +228,22 @@ public class MenuUtama extends JFrame {
         };
         mainContent.setBackground(ThemeUtil.BG_SOFT); 
         
+        // [Inisialisasi Layar] Membuat object (instance) dari masing-masing Form Layar.
         dashboardForm = new DashboardForm(() -> btnLogTransaksi.doClick());
         kategoriForm = new KategoriForm();
         barangForm = new BarangForm();
         customerForm = new CustomerForm();
-        penjualanForm = new PenjualanForm(loggedInUser);
+        penjualanForm = new PenjualanForm(loggedInUser); // Mengirim data user ke kasir agar tahu siapa yang transaksi
         logTransaksiForm = new LogTransaksiForm();
         userForm = new UserForm();
+        laporanForm = new LaporanForm();
         profilForm = new ProfilForm(loggedInUser, () -> {
+            // [Callback Logika] Jika profil di-update, ganti tulisan nama di Topbar secara live
             btnUserDropdown.setText("Halo, " + loggedInUser.getNamaLengkap() + " (" + loggedInUser.getLevel() + ") \u25BC");
         });
 
+        // [Mekanisme CardLayout] Memasukkan setiap form ke dalam CardLayout dan memberikan "Kunci/ID" 
+        // string (contoh: "DASHBOARD"). Nanti, fungsi cardLayout.show() tinggal memanggil string ini.
         mainContent.add(dashboardForm, "DASHBOARD");
         mainContent.add(kategoriForm, "KATEGORI");
         mainContent.add(barangForm, "BARANG");
@@ -223,6 +251,7 @@ public class MenuUtama extends JFrame {
         mainContent.add(penjualanForm, "PENJUALAN");
         mainContent.add(logTransaksiForm, "LOG");
         mainContent.add(userForm, "USER");
+        mainContent.add(laporanForm, "LAPORAN");
         mainContent.add(profilForm, "PROFIL");
 
         JScrollPane mainScroll = new JScrollPane(mainContent);
@@ -233,46 +262,76 @@ public class MenuUtama extends JFrame {
         cardLayout.show(mainContent, "DASHBOARD");
         setActiveButton(btnDashboard);
 
-        // ==================== ACTIONS / ROUTING ====================
+        // ==========================================
+        // [Mekanisme Tombol & Routing Layar] (EVENT LISTENERS)
+        // ==========================================
+        
+        // [Aksi Menu] Ketika btnDashboard diklik di sidebar:
         btnDashboard.addActionListener(e -> { 
-            setActiveButton(btnDashboard); 
-            lblTopTitle.setText("Ringkasan Dashboard");
-            dashboardForm.loadData(); 
-            cardLayout.show(mainContent, "DASHBOARD"); 
+            setActiveButton(btnDashboard); // 1. Ubah warna tombol menjadi "aktif"
+            lblTopTitle.setText("Ringkasan Dashboard"); // 2. Ganti judul di Topbar
+            dashboardForm.loadData(); // 3. Refresh data terbaru dari database
+            cardLayout.show(mainContent, "DASHBOARD"); // 4. Tampilkan panel Dashboard ke layar (CardLayout)
         });
+
+        // [Aksi Menu] Ketika Kelola Kategori diklik
         btnKategori.addActionListener(e -> { 
             setActiveButton(btnKategori); 
-            lblTopTitle.setText("Manajemen Kategori");
+            lblTopTitle.setText("Kelola Data Kategori");
+            kategoriForm.loadData(); 
             cardLayout.show(mainContent, "KATEGORI"); 
         });
-        btnBarang.addActionListener(e -> {
-            setActiveButton(btnBarang);
-            lblTopTitle.setText("Daftar Barang");
-            barangForm.loadComboKategori();
-            barangForm.loadData();
-            cardLayout.show(mainContent, "BARANG");
+
+        // [Aksi Menu] Ketika Kelola Barang diklik
+        btnBarang.addActionListener(e -> { 
+            setActiveButton(btnBarang); 
+            lblTopTitle.setText("Kelola Data Barang");
+            barangForm.loadComboKategori(); // Memuat ulang list kategori di dropdown filter (relasi form)
+            barangForm.loadData(); // Memuat data barang terbaru dari database
+            cardLayout.show(mainContent, "BARANG"); 
         });
+
+        // [Aksi Menu] Ketika Kelola Customer diklik
         btnCustomer.addActionListener(e -> { 
             setActiveButton(btnCustomer); 
-            lblTopTitle.setText("Daftar Customer");
+            lblTopTitle.setText("Kelola Data Customer");
+            customerForm.loadData(); 
             cardLayout.show(mainContent, "CUSTOMER"); 
         });
-        btnPenjualan.addActionListener(e -> {
-            setActiveButton(btnPenjualan);
-            lblTopTitle.setText("Formulir Penjualan");
-            penjualanForm.loadCombo();
-            penjualanForm.loadData();
-            cardLayout.show(mainContent, "PENJUALAN");
+        
+        // [Aksi Menu] Ketika Kasir / Penjualan diklik
+        btnPenjualan.addActionListener(e -> { 
+            setActiveButton(btnPenjualan); 
+            lblTopTitle.setText("Kasir / Transaksi Penjualan");
+            penjualanForm.clearForm(); // Mengosongkan keranjang kasir untuk transaksi baru
+            cardLayout.show(mainContent, "PENJUALAN"); 
         });
-        btnLogTransaksi.addActionListener(e -> {
-            setActiveButton(btnLogTransaksi);
-            lblTopTitle.setText("Log Transaksi");
-            logTransaksiForm.loadData();
-            cardLayout.show(mainContent, "LOG");
+
+        // [Aksi Menu] Ketika Log Transaksi diklik
+        btnLogTransaksi.addActionListener(e -> { 
+            setActiveButton(btnLogTransaksi); 
+            lblTopTitle.setText("Riwayat & Log Transaksi");
+            logTransaksiForm.loadData(); 
+            cardLayout.show(mainContent, "LOG"); 
         });
+
+        // [Aksi Menu] Ketika Laporan diklik
+        btnLaporan.addActionListener(e -> { 
+            setActiveButton(btnLaporan); 
+            lblTopTitle.setText("Laporan Penjualan & Analitik");
+            cardLayout.show(mainContent, "LAPORAN"); 
+        });
+
+        // [Aksi Menu] Ketika Kelola User diklik
         btnKelolaUser.addActionListener(e -> { 
+            // [Validasi Hak Akses] Mencegah Kasir membuka form User
+            if(!"Admin".equals(loggedInUser.getLevel())) {
+                Toast.showError(this, "Hanya Admin yang dapat mengakses menu ini!");
+                return; // Batalkan perpindahan layar
+            }
             setActiveButton(btnKelolaUser); 
-            lblTopTitle.setText("Manajemen User");
+            lblTopTitle.setText("Kelola Pengguna Aplikasi");
+            userForm.clear(); // Bersihkan form
             cardLayout.show(mainContent, "USER"); 
         });
 
@@ -280,6 +339,8 @@ public class MenuUtama extends JFrame {
             btnKategori.setVisible(false);
             btnBarang.setVisible(false);
             btnKelolaUser.setVisible(false);
+            lblMenuPengaturan.setVisible(false);
+            btnLaporan.setVisible(false);
         }
 
         // ==================== ASSEMBLE ====================
@@ -296,8 +357,15 @@ public class MenuUtama extends JFrame {
         return lbl;
     }
 
-    private JButton createSidebarButton(String text) {
+    private JButton createSidebarButton(String text, String iconName) {
         JButton btn = new JButton("   " + text);
+        try {
+            FlatSVGIcon svgIcon = new FlatSVGIcon("icons/" + iconName + ".svg", 20, 20);
+            svgIcon.setColorFilter(new FlatSVGIcon.ColorFilter(color -> Color.WHITE));
+            btn.setIcon(svgIcon);
+        } catch (Exception ex) {
+            System.err.println("Failed to load icon: " + iconName);
+        }
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); 
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);

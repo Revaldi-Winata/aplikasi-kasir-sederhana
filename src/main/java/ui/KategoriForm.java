@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
+import util.ValidationUtil;
 import ui.components.RoundedPanel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -17,7 +18,7 @@ import java.util.List;
 public class KategoriForm extends JPanel {
 
     private JTextField txtId, txtNama;
-    private JButton btnSimpan, btnUbah, btnHapus, btnClear;
+    private JButton btnSimpan, btnHapus, btnClear;
     private JTable table;
     private DefaultTableModel tableModel;
     private KategoriService service;
@@ -65,6 +66,7 @@ public class KategoriForm extends JPanel {
         
         txtNama = new JTextField(20);
         ThemeUtil.styleTextField(txtNama);
+        ValidationUtil.addRequiredValidation(txtNama);
         gbc.gridx = 1;
         panelInput.add(txtNama, gbc);
 
@@ -72,12 +74,10 @@ public class KategoriForm extends JPanel {
         panelBtn.setOpaque(false);
         
         btnSimpan = new JButton("Simpan"); ThemeUtil.styleButton(btnSimpan, ThemeUtil.SUCCESS_COLOR);
-        btnUbah = new JButton("Ubah"); ThemeUtil.styleButton(btnUbah, ThemeUtil.OCEAN_BLUE);
         btnHapus = new JButton("Hapus"); ThemeUtil.styleButton(btnHapus, ThemeUtil.ERROR_COLOR);
         btnClear = new JButton("Clear"); ThemeUtil.styleButton(btnClear, ThemeUtil.TEXT_SECONDARY);
 
         panelBtn.add(btnSimpan);
-        panelBtn.add(btnUbah);
         panelBtn.add(btnHapus);
         panelBtn.add(btnClear);
 
@@ -98,18 +98,34 @@ public class KategoriForm extends JPanel {
         
         ThemeUtil.styleTable(table, scrollPane);
 
+        // Search Panel
+        JPanel panelSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        panelSearch.setOpaque(false);
+        JLabel lblSearch = new JLabel("Cari:");
+        lblSearch.setFont(ThemeUtil.FONT_REGULAR);
+        JTextField txtSearch = new JTextField(15);
+        ThemeUtil.styleTextField(txtSearch);
+        panelSearch.add(lblSearch);
+        panelSearch.add(txtSearch);
+
+        panelBottom.add(panelSearch, BorderLayout.NORTH);
         panelBottom.add(scrollPane, BorderLayout.CENTER);
         add(panelBottom, BorderLayout.CENTER);
 
+        // Search Event
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { loadData(txtSearch.getText()); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { loadData(txtSearch.getText()); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { loadData(txtSearch.getText()); }
+        });
+
         // Events
         btnSimpan.addActionListener(e -> simpanData());
-        btnUbah.addActionListener(e -> ubahData());
         btnHapus.addActionListener(e -> hapusData());
         btnClear.addActionListener(e -> clear());
 
         txtNama.addActionListener(e -> {
-            if (table.getSelectedRow() >= 0) btnUbah.doClick();
-            else btnSimpan.doClick();
+            btnSimpan.doClick();
         });
 
         table.addMouseListener(new MouseAdapter() {
@@ -124,9 +140,13 @@ public class KategoriForm extends JPanel {
         });
     }
 
-    private void loadData() {
+    public void loadData() {
+        loadData("");
+    }
+
+    private void loadData(String keyword) {
         tableModel.setRowCount(0);
-        List<Kategori> list = service.getAllKategori();
+        List<Kategori> list = keyword.isEmpty() ? service.getAllKategori() : service.searchKategori(keyword);
         for (Kategori k : list) {
             tableModel.addRow(new Object[]{k.getIdKategori(), k.getNamaKategori()});
         }
@@ -140,40 +160,34 @@ public class KategoriForm extends JPanel {
 
     private void simpanData() {
         if (txtNama.getText().trim().isEmpty()) {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Nama Kategori tidak boleh kosong!");
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Nama kategori tidak boleh kosong!");
             return;
         }
 
-        Kategori k = new Kategori();
-        k.setNamaKategori(txtNama.getText().trim());
-        
-        if (service.tambahKategori(k)) {
-            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil disimpan");
-            loadData();
-            clear();
-        } else {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan data!");
-        }
-    }
-
-    private void ubahData() {
-        if (table.getSelectedRow() < 0) {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Pilih data yang akan diubah!");
-            return;
-        }
+        boolean isUpdate = table.getSelectedRow() >= 0;
 
         Kategori k = new Kategori();
         try {
             k.setIdKategori(Integer.parseInt(txtId.getText()));
         } catch (Exception e) {}
         k.setNamaKategori(txtNama.getText().trim());
-        
-        if (service.updateKategori(k)) {
-            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil diubah");
-            loadData();
-            clear();
+
+        if (isUpdate) {
+            if (service.updateKategori(k)) {
+                Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil diupdate");
+                loadData();
+                clear();
+            } else {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengupdate data!");
+            }
         } else {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengubah data!");
+            if (service.tambahKategori(k)) {
+                Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil disimpan");
+                loadData();
+                clear();
+            } else {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan data!");
+            }
         }
     }
 

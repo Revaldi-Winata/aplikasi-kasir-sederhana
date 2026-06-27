@@ -14,17 +14,19 @@ public class Barang {
     private int idKategori;
     private String namaBarang;
     private String satuan;
+    private double hargaBeli;
     private double hargaJual;
     private int stok;
 
     public Barang() {
     }
 
-    public Barang(String idBarang, int idKategori, String namaBarang, String satuan, double hargaJual, int stok) {
+    public Barang(String idBarang, int idKategori, String namaBarang, String satuan, double hargaBeli, double hargaJual, int stok) {
         this.idBarang = idBarang;
         this.idKategori = idKategori;
         this.namaBarang = namaBarang;
         this.satuan = satuan;
+        this.hargaBeli = hargaBeli;
         this.hargaJual = hargaJual;
         this.stok = stok;
     }
@@ -59,6 +61,14 @@ public class Barang {
 
     public void setSatuan(String satuan) {
         this.satuan = satuan;
+    }
+
+    public double getHargaBeli() {
+        return hargaBeli;
+    }
+
+    public void setHargaBeli(double hargaBeli) {
+        this.hargaBeli = hargaBeli;
     }
 
     public double getHargaJual() {

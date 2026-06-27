@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
+import util.ValidationUtil;
 import ui.components.RoundedPanel;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -17,8 +18,9 @@ import java.util.List;
 
 public class CustomerForm extends JPanel {
 
-    private JTextField txtId, txtNama, txtAlamat, txtTelepon;
-    private JButton btnSimpan, btnUbah, btnHapus, btnClear;
+    private JTextField txtId, txtNama, txtTelepon;
+    private JTextArea txtAlamat;
+    private JButton btnSimpan, btnHapus, btnClear;
     private JTable table;
     private DefaultTableModel tableModel;
     private CustomerService service;
@@ -52,24 +54,28 @@ public class CustomerForm extends JPanel {
 
         gbc.gridx = 0; gbc.gridy = 1; addLabel(panelInput, "Nama Customer:", gbc);
         txtNama = new JTextField(20); ThemeUtil.styleTextField(txtNama);
+        ValidationUtil.addAlphabetValidation(txtNama);
         gbc.gridx = 1; panelInput.add(txtNama, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2; addLabel(panelInput, "Alamat:", gbc);
-        txtAlamat = new JTextField(20); ThemeUtil.styleTextField(txtAlamat);
-        gbc.gridx = 1; panelInput.add(txtAlamat, gbc);
+        txtAlamat = new JTextArea(3, 20); ThemeUtil.styleTextArea(txtAlamat);
+        gbc.gridx = 1; panelInput.add(new JScrollPane(txtAlamat), gbc);
 
         gbc.gridx = 0; gbc.gridy = 3; addLabel(panelInput, "No Telepon:", gbc);
         txtTelepon = new JTextField(20); ThemeUtil.styleTextField(txtTelepon);
+        ThemeUtil.makeNumberOnly(txtTelepon);
+        ValidationUtil.addNumericValidation(txtTelepon);
         gbc.gridx = 1; panelInput.add(txtTelepon, gbc);
 
         JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panelBtn.setOpaque(false);
         btnSimpan = new JButton("Simpan"); ThemeUtil.styleButton(btnSimpan, ThemeUtil.SUCCESS_COLOR);
-        btnUbah = new JButton("Ubah"); ThemeUtil.styleButton(btnUbah, ThemeUtil.OCEAN_BLUE);
         btnHapus = new JButton("Hapus"); ThemeUtil.styleButton(btnHapus, ThemeUtil.ERROR_COLOR);
         btnClear = new JButton("Clear"); ThemeUtil.styleButton(btnClear, ThemeUtil.TEXT_SECONDARY);
 
-        panelBtn.add(btnSimpan); panelBtn.add(btnUbah); panelBtn.add(btnHapus); panelBtn.add(btnClear);
+        panelBtn.add(btnSimpan);
+        panelBtn.add(btnHapus);
+        panelBtn.add(btnClear);
 
         panelTop.add(panelInput, BorderLayout.WEST);
         panelTop.add(panelBtn, BorderLayout.SOUTH);
@@ -86,22 +92,31 @@ public class CustomerForm extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         ThemeUtil.styleTable(table, scrollPane);
 
+        // Search Panel
+        JPanel panelSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        panelSearch.setOpaque(false);
+        JLabel lblSearch = new JLabel("Cari:");
+        lblSearch.setFont(ThemeUtil.FONT_REGULAR);
+        JTextField txtSearch = new JTextField(15);
+        ThemeUtil.styleTextField(txtSearch);
+        panelSearch.add(lblSearch);
+        panelSearch.add(txtSearch);
+
+        panelBottom.add(panelSearch, BorderLayout.NORTH);
         panelBottom.add(scrollPane, BorderLayout.CENTER);
         add(panelBottom, BorderLayout.CENTER);
 
+        // Search Event
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { loadData(txtSearch.getText()); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { loadData(txtSearch.getText()); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { loadData(txtSearch.getText()); }
+        });
+
         // Events
         btnSimpan.addActionListener(e -> simpanData());
-        btnUbah.addActionListener(e -> ubahData());
         btnHapus.addActionListener(e -> hapusData());
         btnClear.addActionListener(e -> clear());
-
-        ActionListener enterSubmit = e -> {
-            if (table.getSelectedRow() >= 0) btnUbah.doClick();
-            else btnSimpan.doClick();
-        };
-        txtNama.addActionListener(enterSubmit);
-        txtAlamat.addActionListener(enterSubmit);
-        txtTelepon.addActionListener(enterSubmit);
 
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -124,9 +139,13 @@ public class CustomerForm extends JPanel {
         p.add(lbl, gbc);
     }
 
-    private void loadData() {
+    public void loadData() {
+        loadData("");
+    }
+
+    private void loadData(String keyword) {
         tableModel.setRowCount(0);
-        List<Customer> list = service.getAllCustomer();
+        List<Customer> list = keyword.isEmpty() ? service.getAllCustomer() : service.searchCustomer(keyword);
         for (Customer c : list) {
             tableModel.addRow(new Object[]{c.getIdCustomer(), c.getNamaCustomer(), c.getAlamat(), c.getTelepon()});
         }
@@ -142,44 +161,35 @@ public class CustomerForm extends JPanel {
     }
 
     private void simpanData() {
-        if (txtNama.getText().trim().isEmpty()) {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Nama Customer tidak boleh kosong!");
+        if (txtNama.getText().trim().isEmpty() || txtAlamat.getText().trim().isEmpty() || txtTelepon.getText().trim().isEmpty()) {
+            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Semua field harus diisi!");
             return;
         }
+
+        boolean isUpdate = table.getSelectedRow() >= 0;
 
         Customer c = new Customer();
         c.setIdCustomer(txtId.getText());
         c.setNamaCustomer(txtNama.getText().trim());
         c.setAlamat(txtAlamat.getText().trim());
         c.setTelepon(txtTelepon.getText().trim());
-        
-        if (service.tambahCustomer(c)) {
-            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil disimpan");
-            loadData();
-            clear();
-        } else {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan data!");
-        }
-    }
 
-    private void ubahData() {
-        if (table.getSelectedRow() < 0) {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Pilih data yang akan diubah!");
-            return;
-        }
-
-        Customer c = new Customer();
-        c.setIdCustomer(txtId.getText());
-        c.setNamaCustomer(txtNama.getText().trim());
-        c.setAlamat(txtAlamat.getText().trim());
-        c.setTelepon(txtTelepon.getText().trim());
-        
-        if (service.updateCustomer(c)) {
-            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil diubah");
-            loadData();
-            clear();
+        if (isUpdate) {
+            if (service.updateCustomer(c)) {
+                Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil diupdate");
+                loadData();
+                clear();
+            } else {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengupdate data!");
+            }
         } else {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengubah data!");
+            if (service.tambahCustomer(c)) {
+                Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Data berhasil disimpan");
+                loadData();
+                clear();
+            } else {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan data!");
+            }
         }
     }
 

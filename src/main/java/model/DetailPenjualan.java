@@ -11,6 +11,7 @@ public class DetailPenjualan {
     private int idDetail;
     private int idJual;
     private String idBarang;
+    private double hargaBeli;
     private double hargaSatuan;
     private int jumlahBeli;
     private double subtotal;
@@ -21,10 +22,11 @@ public class DetailPenjualan {
     public DetailPenjualan() {
     }
 
-    public DetailPenjualan(int idDetail, int idJual, String idBarang, double hargaSatuan, int jumlahBeli, double subtotal) {
+    public DetailPenjualan(int idDetail, int idJual, String idBarang, double hargaBeli, double hargaSatuan, int jumlahBeli, double subtotal) {
         this.idDetail = idDetail;
         this.idJual = idJual;
         this.idBarang = idBarang;
+        this.hargaBeli = hargaBeli;
         this.hargaSatuan = hargaSatuan;
         this.jumlahBeli = jumlahBeli;
         this.subtotal = subtotal;
@@ -52,6 +54,14 @@ public class DetailPenjualan {
 
     public void setIdBarang(String idBarang) {
         this.idBarang = idBarang;
+    }
+
+    public double getHargaBeli() {
+        return hargaBeli;
+    }
+
+    public void setHargaBeli(double hargaBeli) {
+        this.hargaBeli = hargaBeli;
     }
 
     public double getHargaSatuan() {

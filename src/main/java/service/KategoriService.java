@@ -37,6 +37,26 @@ public class KategoriService {
         return list;
     }
 
+    public List<Kategori> searchKategori(String keyword) {
+        List<Kategori> list = new ArrayList<>();
+        String sql = "SELECT * FROM tb_kategori WHERE nama_kategori LIKE ? ORDER BY id_kategori";
+        try (Connection conn = Koneksi.getKoneksi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + keyword + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Kategori k = new Kategori();
+                    k.setIdKategori(rs.getInt("id_kategori"));
+                    k.setNamaKategori(rs.getString("nama_kategori"));
+                    list.add(k);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean tambahKategori(Kategori k) {
         String sql = "INSERT INTO tb_kategori (nama_kategori) VALUES (?)";
         try (Connection conn = Koneksi.getKoneksi();

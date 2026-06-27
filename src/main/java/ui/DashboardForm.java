@@ -16,7 +16,7 @@ public class DashboardForm extends JPanel {
 
     private DashboardService service;
 
-    private JLabel lblTotalKategori, lblTotalBarang, lblTotalCustomer, lblTotalPendapatan;
+    private JLabel lblTotalKategori, lblTotalBarang, lblTotalCustomer, lblTotalPendapatan, lblTotalKeuntungan;
     
     private DefaultTableModel tblModelRiwayat, tblModelTopBarang, tblModelTopCustomer;
     private JComboBox<String> cbFilterPeriode;
@@ -39,19 +39,21 @@ public class DashboardForm extends JPanel {
         pnlTop.setOpaque(false);
 
 
-        JPanel cardsPanel = new JPanel(new GridLayout(1, 4, 15, 15));
+        JPanel cardsPanel = new JPanel(new GridLayout(1, 5, 20, 20));
         cardsPanel.setOpaque(false);
-        cardsPanel.setPreferredSize(new Dimension(0, 100));
+        cardsPanel.setPreferredSize(new Dimension(0, 120));
 
-        lblTotalPendapatan = createLabel("Rp 0", ThemeUtil.ERROR_COLOR);
-        lblTotalBarang = createLabel("0", ThemeUtil.SKY_BLUE);
-        lblTotalCustomer = createLabel("0", ThemeUtil.OCEAN_BLUE);
-        lblTotalKategori = createLabel("0", ThemeUtil.SUCCESS_COLOR);
+        lblTotalPendapatan = createLabel("Rp 0", ThemeUtil.TEXT_PRIMARY);
+        lblTotalKeuntungan = createLabel("Rp 0", ThemeUtil.TEXT_PRIMARY);
+        lblTotalBarang = createLabel("0", ThemeUtil.TEXT_PRIMARY);
+        lblTotalCustomer = createLabel("0", ThemeUtil.TEXT_PRIMARY);
+        lblTotalKategori = createLabel("0", ThemeUtil.TEXT_PRIMARY);
 
-        cardsPanel.add(createSummaryCard("Total Pendapatan", ThemeUtil.ERROR_COLOR, lblTotalPendapatan));
-        cardsPanel.add(createSummaryCard("Total Barang", ThemeUtil.SKY_BLUE, lblTotalBarang));
-        cardsPanel.add(createSummaryCard("Total Customer", ThemeUtil.OCEAN_BLUE, lblTotalCustomer));
-        cardsPanel.add(createSummaryCard("Total Kategori", ThemeUtil.SUCCESS_COLOR, lblTotalKategori));
+        cardsPanel.add(createSummaryCard("Pendapatan", ThemeUtil.SKY_BLUE, lblTotalPendapatan, "circle-dollar-sign"));
+        cardsPanel.add(createSummaryCard("Keuntungan", ThemeUtil.SUCCESS_COLOR, lblTotalKeuntungan, "circle-dollar-sign"));
+        cardsPanel.add(createSummaryCard("Total Barang", ThemeUtil.OCEAN_BLUE, lblTotalBarang, "box"));
+        cardsPanel.add(createSummaryCard("Total Customer", ThemeUtil.WARNING_COLOR, lblTotalCustomer, "users"));
+        cardsPanel.add(createSummaryCard("Total Kategori", ThemeUtil.ERROR_COLOR, lblTotalKategori, "tags"));
         
         pnlTop.add(cardsPanel, BorderLayout.CENTER);
         add(pnlTop, BorderLayout.NORTH);
@@ -156,21 +158,39 @@ public class DashboardForm extends JPanel {
         return lbl;
     }
 
-    private RoundedPanel createSummaryCard(String title, Color accentColor, JLabel valueLabel) {
+    private RoundedPanel createSummaryCard(String title, Color accentColor, JLabel valueLabel, String iconName) {
         RoundedPanel card = ThemeUtil.createCardPanel();
-        card.setLayout(new BorderLayout(5, 5));
+        card.setLayout(new BorderLayout(10, 10));
         
-        JLabel lblHeader = new JLabel(title, SwingConstants.CENTER);
+        JLabel lblHeader = new JLabel(title, SwingConstants.LEFT);
         lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblHeader.setForeground(ThemeUtil.TEXT_PRIMARY);
+        lblHeader.setForeground(ThemeUtil.TEXT_SECONDARY);
         
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setOpaque(false);
-        headerPanel.add(lblHeader, BorderLayout.CENTER);
-        headerPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, accentColor));
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.add(lblHeader, BorderLayout.CENTER);
         
-        card.add(headerPanel, BorderLayout.NORTH);
+        if (iconName != null) {
+            try {
+                com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon("icons/" + iconName + ".svg", 24, 24);
+                icon.setColorFilter(new com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter(color -> accentColor));
+                JLabel lblIcon = new JLabel(icon);
+                topPanel.add(lblIcon, BorderLayout.EAST);
+            } catch (Exception e) {}
+        }
+        
+        valueLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 26)); // Slightly smaller for better fit
+        valueLabel.setForeground(ThemeUtil.TEXT_PRIMARY); 
+        
+        card.add(topPanel, BorderLayout.NORTH);
         card.add(valueLabel, BorderLayout.CENTER);
+        
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 4, 0, accentColor),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+        
         return card;
     }
 
@@ -179,11 +199,13 @@ public class DashboardForm extends JPanel {
         int barang = service.getTotalBarang();
         int customer = service.getTotalCustomer();
         double pendapatan = service.getTotalPendapatan();
+        double keuntungan = service.getTotalKeuntungan();
 
         lblTotalKategori.setText(String.valueOf(kategori));
         lblTotalBarang.setText(String.valueOf(barang));
         lblTotalCustomer.setText(String.valueOf(customer));
         lblTotalPendapatan.setText(Formatter.formatRupiah(pendapatan));
+        lblTotalKeuntungan.setText(Formatter.formatRupiah(keuntungan));
 
         loadRiwayatData();
         loadTopData();

@@ -21,17 +21,21 @@ Toko Berkah Jaya menangani operasional toko harian. Sistem ini melacak inventari
 - **Akses berbasis peran**: Administrator memiliki akses sistem penuh. Kasir hanya dapat mengakses area penjualan, dasbor, dan profil mereka sendiri.
 - **Pelacakan inventaris**: Tambah, perbarui, dan hapus produk. Sistem melacak tingkat stok dan kategori produk.
 - **Database pelanggan**: Simpan catatan informasi pelanggan tetap.
-- **Point of sale**: Proses transaksi, hitung total dengan pembuatan nomor faktur otomatis, dan cetak setruk sebagai file PDF.
-- **Log transaksi**: Pantau riwayat keseluruhan penjualan yang pernah terjadi.
-- **Profil pengguna**: Staf dapat memperbarui kata sandi dan nama pengguna mereka sendiri tanpa harus merepotkan administrator.
+- **Point of sale**: Proses transaksi, hitung total dengan pembuatan nomor faktur otomatis, cetak setruk fisik/struk PDF, serta pratinjau invoice dinamis.
+- **Laporan Penjualan & Ekspor Excel**: Modul laporan penjualan interaktif yang mendukung filter rentang waktu (tanggal), kategori barang, dan nama pelanggan. Dilengkapi dengan fitur pemilihan data (*row selection*) dan ekspor laporan instan ke format Microsoft Excel (`.xlsx`) menggunakan Apache POI.
+- **Log transaksi**: Pantau riwayat keseluruhan penjualan dan keluar masuknya stok barang secara real-time.
+- **Profil pengguna**: Staf dapat memperbarui kata sandi dan nama pengguna mereka sendiri secara mandiri.
 
 ## Tech stack
 
-- **Bahasa**: Java (JDK 17+)
-- **GUI framework**: Java Swing dan AWT
-- **Database**: MySQL
+- **Bahasa**: Java (JDK 11 ke atas / kompatibel dengan JDK 17)
+- **GUI framework**: Java Swing (FlatLaf Look and Feel)
+- **Database**: MySQL (RDBMS)
 - **Build tool**: Apache Maven
-- **Pembuatan PDF**: Apache PDFBox
+- **Library Eksternal**:
+  - Apache POI (Ekspor laporan Excel `.xlsx`)
+  - OpenPDF / PDFBox (Pencetakan invoice PDF)
+  - MySQL Connector/J (JDBC driver MySQL)
 
 ## Persyaratan sistem
 

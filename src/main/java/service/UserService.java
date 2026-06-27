@@ -63,6 +63,40 @@ public class UserService {
         return list;
     }
 
+    public List<User> searchUser(String keyword, String filterRole) {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT * FROM tb_user WHERE (username LIKE ? OR nama_lengkap LIKE ?) ";
+        if (filterRole != null && !filterRole.isEmpty() && !filterRole.equals("Semua Role")) {
+            sql += " AND level = ? ";
+        }
+        sql += " ORDER BY id_user";
+
+        try (Connection conn = Koneksi.getKoneksi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
+            
+            if (filterRole != null && !filterRole.isEmpty() && !filterRole.equals("Semua Role")) {
+                ps.setString(3, filterRole);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setIdUser(rs.getInt("id_user"));
+                    u.setUsername(rs.getString("username"));
+                    u.setPassword(rs.getString("password"));
+                    u.setNamaLengkap(rs.getString("nama_lengkap"));
+                    u.setLevel(rs.getString("level"));
+                    list.add(u);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean tambahUser(User u) {
         String sql = "INSERT INTO tb_user (username, password, nama_lengkap, level) VALUES (?,?,?,?)";
         try (Connection conn = Koneksi.getKoneksi();

@@ -7,6 +7,7 @@ import ui.components.Toast;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import util.ThemeUtil;
+import util.ValidationUtil;
 import ui.components.RoundedPanel;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -55,6 +56,7 @@ public class ProfilForm extends JPanel {
         addLabel(panelInput, "Nama Lengkap:", gbc);
         txtNamaLengkap = new JTextField(20);
         ThemeUtil.styleTextField(txtNamaLengkap);
+        ValidationUtil.addAlphabetValidation(txtNamaLengkap);
         gbc.gridx = 1; panelInput.add(txtNamaLengkap, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2;

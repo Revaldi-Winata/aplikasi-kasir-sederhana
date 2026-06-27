@@ -1,0 +1,175 @@
+=== ENTIRE DOCX EXTRACTION ===
+
+--- PARAGRAPHS ---
+P 0: LAPORAN DOKUMETASI DAN TESTING PROGRAM
+TOKO BERKAH JAYA
+P 9: Penulis:
+P 10: Revaldi Winata
+P 11: NIM: 231011401910
+P 15: PROGRAM STUDI TEKNIK INFORMATIKA
+P 16: FAKULTAS ILMU KOMPUTER
+P 17: UNIVERSITAS PAMULANG
+P 18: TAHUN 2026
+P 20: DOKUMENTASI PROGRAM DAN TESTING
+P 23: BAB  I. Pendahuluan
+P 24: Latar Belakang dan Tujuan Pembuatan Dokumen
+P 25: Latar Belakang
+P 26: Perkembangan teknologi digital mendorong pelaku usaha, termasuk sektor retail dan Usaha Mikro, Kecil, dan Menengah (UMKM) seperti Toko Berkah Jaya, untuk meningkatkan efisiensi dalam menjalankan operasional sehari-hari. Pengelolaan transaksi penjualan serta pencatatan persediaan yang masih dilakukan secara manual sering menimbulkan berbagai kendala, mulai dari kesalahan pencatatan akibat faktor manusia, proses pencarian data yang kurang efisien, kesulitan memantau stok barang secara langsung, hingga penyusunan laporan penjualan yang membutuhkan waktu relatif lama.
+P 27: Sebagai solusi atas permasalahan tersebut, dikembangkan Aplikasi Kasir (Point of Sales/POS) Toko Berkah Jaya berbasis desktop menggunakan bahasa pemrograman Java dengan antarmuka Java Swing serta sistem basis data relasional MySQL. Aplikasi ini dirancang untuk mempercepat proses transaksi, mengurangi kesalahan perhitungan pada kasir, melakukan pembaruan stok secara otomatis, serta menghasilkan laporan penjualan yang akurat dan mudah diakses.
+P 28: Tujuan Pembuatan Dokumen
+P 29: Dokumen Dokumentasi Program dan Testing disusun untuk mencapai beberapa tujuan berikut:
+P 30: Panduan Teknis Sistem
+P 31: Menyediakan dokumentasi yang terstruktur mengenai arsitektur aplikasi, rancangan basis data, dan implementasi kode sumber sehingga proses pengembangan maupun pemeliharaan sistem pada masa mendatang dapat dilakukan dengan lebih mudah.
+P 32: Penjaminan Mutu (Quality Assurance)
+P 33: Mendokumentasikan rencana serta hasil pengujian menggunakan metode Black-Box Testing (Alpha Test) guna memastikan setiap fungsi aplikasi bekerja sesuai kebutuhan dan tidak mengalami kesalahan operasional.
+P 34: Dokumentasi Akademik
+P 35: Memenuhi persyaratan penyusunan laporan proyek pada mata kuliah Pemrograman II Program Studi Teknik Informatika Universitas Pamulang.
+P 37: Deskripsi Umum Sistem
+P 38: Aplikasi Kasir Toko Berkah Jaya merupakan sistem Point of Sales berbasis Java Desktop yang dikembangkan untuk mendukung aktivitas transaksi harian secara terkomputerisasi. Sistem dibangun dengan arsitektur modular yang memisahkan komponen antarmuka pengguna (Graphical User Interface/GUI), model data, dan layanan akses basis data (Service Layer) agar pengelolaan aplikasi menjadi lebih terstruktur.
+P 39: Fitur utama yang tersedia pada aplikasi meliputi:
+P 40: Sistem Login Multi-user
+P 41: Mengatur hak akses berdasarkan peran pengguna. Admin memiliki wewenang penuh terhadap pengelolaan data master, laporan, dan log aktivitas, sedangkan kasir hanya diberikan akses pada proses transaksi penjualan.
+P 42: Manajemen Data Master (CRUD)
+P 43: Menyediakan fasilitas pengelolaan data Barang, termasuk informasi stok minimum, Kategori Barang, Customer, dan User melalui operasi Create, Read, Update, dan Delete.
+P 44: Transaksi Penjualan
+P 45: Menyediakan keranjang belanja interaktif dengan perhitungan subtotal otomatis, pencarian barang secara cepat, perhitungan uang kembalian, pencetakan struk transaksi, serta pratinjau invoice dalam format PDF.
+P 46: Log Transaksi
+P 47: Mencatat setiap aktivitas pengguna beserta perubahan stok barang sehingga riwayat transaksi dapat ditelusuri dengan baik.
+P 48: Dashboard Summary
+P 49: Menampilkan ringkasan informasi penting, seperti total pendapatan harian, produk terlaris, pelanggan dengan transaksi terbanyak, serta kondisi stok yang telah mencapai batas minimum.
+P 50: Laporan Penjualan dan Ekspor Data
+P 51: Menyediakan laporan penjualan berdasarkan rentang tanggal, pelanggan, maupun kategori barang. Data laporan juga dapat diekspor ke dalam format Microsoft Excel (.xlsx) menggunakan pustaka Apache POI.
+P 53: Deskripsi Dokumen (Ikhtisar)
+P 54: Dokumen ini disusun ke dalam 4 (empat) bagian utama sebagai berikut:
+P 55: BAB I. Pendahuluan
+P 56: Bab ini menguraikan dasar pengembangan perangkat lunak, tujuan penyusunan dokumen, gambaran umum mengenai sistem yang dibangun, istilah dan singkatan yang digunakan, serta referensi yang menjadi landasan dalam penyusunan laporan.
+P 57: BAB II. Dokumentasi Program
+P 58: Bab ini memuat dokumentasi teknis aplikasi yang mencakup perangkat lunak pendukung pengembangan, spesifikasi perangkat keras, rancangan relasi basis data, implementasi struktur tabel, dokumentasi kode sumber pada modul utama, serta komponen eksternal (pre-existing components) yang dimanfaatkan selama proses pembangunan sistem.
+P 59: BAB III. Lingkungan Pengujian Perangkat Lunak
+P 60: Bab ini menjelaskan lingkungan yang digunakan selama proses pengujian, perencanaan pengujian fungsional dengan metode Black-box Testing, skenario pengujian yang diterapkan, serta hasil implementasi pengujian untuk memverifikasi bahwa setiap fitur aplikasi telah berfungsi sesuai dengan kebutuhan.
+P 61: BAB IV. Penutup
+P 62: Bab terakhir menyajikan kesimpulan yang diperoleh dari keseluruhan tahapan analisis, perancangan, implementasi, dan pengujian aplikasi. Selain itu, disampaikan pula beberapa saran yang dapat dijadikan acuan dalam pengembangan maupun penyempurnaan sistem pada versi berikutnya.
+P 66: Definisi dan Singkatan
+P 67: Istilah dan singkatan yang digunakan dalam dokumen ini dijelaskan sebagai berikut:
+P 68: POS (Point of Sales) merupakan sistem kasir berbasis komputer yang digunakan untuk mengelola transaksi penjualan.
+P 69: JDK (Java Development Kit) adalah perangkat lunak yang digunakan untuk mengompilasi dan menjalankan aplikasi Java.
+P 70: IDE (Integrated Development Environment) merupakan lingkungan pengembangan yang digunakan untuk menulis, mengelola, dan mengompilasi kode program. Pada proyek ini digunakan Apache NetBeans.
+P 71: RDBMS (Relational Database Management System) adalah sistem manajemen basis data relasional yang pada aplikasi ini diimplementasikan menggunakan MySQL.
+P 72: CRUD (Create, Read, Update, Delete) merupakan empat operasi dasar yang digunakan dalam pengelolaan data, yaitu menambah, membaca, mengubah, dan menghapus data.
+P 73: FlatLaf (Flat Look and Feel) adalah pustaka Java Swing yang digunakan untuk menghasilkan tampilan antarmuka yang modern, sederhana, serta mendukung tema gelap (dark mode).
+P 74: Apache POI merupakan library Java yang digunakan untuk membaca dan menghasilkan dokumen Microsoft Office, khususnya berkas Microsoft Excel (.xlsx).
+P 75: Black-Box Testing adalah metode pengujian perangkat lunak yang mengevaluasi kesesuaian fungsi berdasarkan masukan dan keluaran sistem tanpa meninjau implementasi kode program.
+P 77: Dokumen Referensi
+P 78: Dokumen ini mengacu pada beberapa sumber berikut:
+P 79: Mentari (e-Learning) Pemrograman II, Program Studi Teknik Informatika, Fakultas Ilmu Komputer, Universitas Pamulang.
+P 80: Java SE 11 Documentation, Oracle Corporation. URL: https://docs.oracle.com/en/java/javase/11/
+P 81: MySQL Reference Manual, Oracle Corporation. URL: https://dev.mysql.com/doc/
+P 82: FlatLaf - Flat Look and Feel Documentation, FormDev Software GmbH. URL: https://www.formdev.com/flatlaf/
+P 83: Apache POI API Documentation, The Apache Software Foundation. URL: https://poi.apache.org/
+P 85: BAB II. Dokumentasi Program
+P 86: Perangkat Lunak Pembangun
+P 87: Perangkat lunak yang digunakan pada sistem komputer yang digunakan untuk membangun Aplikasi Untuk Sistem Toko Berkah Jaya adalah sebagai berikut:
+P 89: Tabel 1
+P 90: Spesifikasi perangkat lunak
+P 91: Perangkat Keras
+P 92: Kebutuhan minimum perangkat keras (hardware) yang diperlukan untuk mengimplementasikan program aplikasi yang dibuat adalah perangkat keras komputer PC kompatibel dengan spesifikasi yang disebutkan dibawah ini.
+P 93: Semakin tinggi spesifikasi komputer yang digunakan untuk menjalankan aplikasi, akan semakin baik. Adapun spesifikasi perangkat keras yang digunakan untuk membangun aplikasi sistem Toko Berkah Jaya ini adalah sebagai berikut :
+P 95: Tabel 2
+P 96: Spesifikasi perangkat keras
+P 99: Skema Basis Data
+P 101: Gambar 1
+P 102: Skema Relasi Basis data
+P 104: Implementasi Basis Data
+P 106: Dokumentasi Kode Sumber
+P 108: Komponen Pre Exiting
+P 109: Dalam pengembangan Aplikasi Kasir Toko Berkah Jaya, beberapa pustaka pihak ketiga (pre-existing components) digunakan untuk mendukung fungsionalitas aplikasi, yaitu:
+P 110: FlatLaf (Look and Feel), digunakan sebagai pustaka antarmuka Java Swing untuk menghasilkan tampilan aplikasi yang modern serta mendukung tema light mode dan dark mode.
+P 111: Apache POI, digunakan untuk membuat dan mengekspor laporan penjualan ke dalam format Microsoft Excel (.xlsx).
+P 112: MySQL Connector/J (JDBC), digunakan sebagai driver yang menghubungkan aplikasi Java dengan basis data MySQL sehingga proses pertukaran data dapat dilakukan melalui JDBC.
+P 114: BAB III. Lingkungan Pengujian Perangkat Lunak
+P 115: Perangkat Lunak Pengujian
+P 116: Sistem Operasi            : Windows 10
+P 117: Bahasa Pemrograman : Java
+P 118: Database                     : MySQL (XAMPP Server)
+P 120: Perangkat Keras Pengujian
+P 121: Processor    : Intel(R) Celeron(R) CPU 3867U @ 1.80 GHz
+P 122: Memory      : 8 GB
+P 123: Harddisk     : 1 TB
+P 125: Material Pengujian
+P 126: Penjelasan secara singkat step-step pengujian mulai dari awal sampai akhir.
+P 128: Sumber Daya Manusia
+P 129: Menjelaskan siapa saja yang terlibat dalam pengujian perangkat lunak.
+P 131: Prosedur Umum Pengujian
+P 132: Rencana Pengujian
+P 133: Menjelaskan perencanaan pengujian untuk berbagai level dari keseluruhan
+P 134: pengujian perangkat lunak.
+P 135: Menjelaskan Kelas Uji,  Butir Uji, Identifikasi, Tingkat/Level Pengujian, Jenis Pengujian, dan Penguji.
+P 137: Contoh:
+P 138: Tabel 3
+P 139: Rencana Pengujian Alpha Aplikasi Sistem Toko Berkah Jaya
+P 142: 2. Implementasi Pengujian
+P 143: Contoh :
+P 144: Tabel 4.4 Pengujian Login
+P 146: 3. Kesimpulan Hasil Uji
+P 147: Berdasarkan hasil pengujian alpha menggunakan metode blackbox yang telah dilakukan dapat diambil kesimpulan bahwa secara fungsional sistem sudah dapat menghasilkan output yang diharapkan.
+P 148: 4. Laporan Pengujian
+P 149: - Merangkum hasil pengujian yang dilakukan.
+P 150: - Memberikan evaluasi serta rekomendasi berdasarkan hasil setelah pengujian
+P 151: selesai.
+P 153: BAB III. Penutup
+P 154: Kesimpulan
+P 156: Saran
+
+--- TABLES ---
+
+Table 0 (Rows: 5, Cols: 3):
+  Row 0: ['No', 'Perangkat Lunak', 'Keterangan']
+  Row 1: ['1.', 'Sistem Operasi', 'Windows 10']
+  Row 2: ['2.', 'Web browser', 'Google Chrome']
+  Row 3: ['3.', 'Code programmer', 'Apache NetBeans IDE 25']
+  Row 4: ['4.', 'database', 'MySQL, XAMPP Server']
+
+Table 1 (Rows: 10, Cols: 3):
+  Row 0: ['No', 'Perangkat Keras', 'Spesifikasi']
+  Row 1: ['1.', 'Prosessor', 'Intel Core i3 / AMD Ryzen 3 (atau setara Dual-Core 2.4 GHz ke atas)']
+  Row 2: ['2.', 'Monitor', 'Monitor LCD / LED 15 inch ke atas (Resolusi minimal 1366x768)']
+  Row 3: ['3.', 'VGA', 'Intel HD Graphics / On-Board VGA 512 Mb']
+  Row 4: ['4.', 'Memori', 'RAM 4 Gb (DDR3 / DDR4)']
+  Row 5: ['5.', 'Hard disk', 'SSD dengan kapasitas bebas minimal 10 Gb (untuk Windows, JDK, MySQL, & DB)']
+  Row 6: ['6.', 'Optical Drive', 'Tidak diperlukan (Opsional)']
+  Row 7: ['7.', 'Keyboard', 'Standard']
+  Row 8: ['8.', 'Mouse', 'Standard']
+  Row 9: ['9.', 'Printer', 'Thermal Receipt Printer 58mm / 80mm USB']
+
+Table 2 (Rows: 1, Cols: 1):
+  Row 0: ['']
+
+Table 3 (Rows: 1, Cols: 1):
+  Row 0: ["-- 1. Membuat Database CREATE DATABASE IF NOT EXISTS `tokoberkahjaya`; USE `tokoberkahjaya`;  -- 2. Membuat Tabel User CREATE TABLE `tb_user` (   `id_user` int(11) NOT NULL AUTO_INCREMENT,   `username` varchar(50) NOT NULL,   `password` varchar(255) NOT NULL,   `nama_lengkap` varchar(100) NOT NULL,   `level` enum('Admin','Kasir') NOT NULL,   PRIMARY KEY (`id_user`),   UNIQUE KEY `username` (`username`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;  -- 3. Membuat Tabel Kategori CREATE TABLE `tb_kategori` (   `id_kategori` int(11) NOT NULL AUTO_INCREMENT,   `nama_kategori` varchar(50) NOT NULL,   PRIMARY KEY (`id_kategori`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;  -- 4. Membuat Tabel Barang CREATE TABLE `tb_barang` (   `id_barang` varchar(10) NOT NULL,   `id_kategori` int(11) DEFAULT NULL,   `nama_barang` varchar(100) NOT NULL,   `satuan` varchar(20) DEFAULT NULL,   `harga_jual` double NOT NULL,   `stok` int(11) NOT NULL,   PRIMARY KEY (`id_barang`),   KEY `id_kategori` (`id_kategori`),   CONSTRAINT `tb_barang_ibfk_1` FOREIGN KEY (`id_kategori`)      REFERENCES `tb_kategori` (`id_kategori`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;  -- 5. Membuat Tabel Customer CREATE TABLE `tb_customer` (   `id_customer` varchar(10) NOT NULL,   `nama_customer` varchar(100) NOT NULL,   `alamat` text DEFAULT NULL,   `telepon` varchar(15) DEFAULT NULL,   PRIMARY KEY (`id_customer`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;  -- 6. Membuat Tabel Penjualan (Header Transaksi) CREATE TABLE `tb_penjualan` (   `id_jual` int(11) NOT NULL AUTO_INCREMENT,   `no_faktur` varchar(20) NOT NULL,   `tgl_transaksi` date NOT NULL,   `id_customer` varchar(10) DEFAULT NULL,   `total_bayar` double NOT NULL,   `id_user` int(11) DEFAULT NULL,   PRIMARY KEY (`id_jual`),   UNIQUE KEY `no_faktur` (`no_faktur`),   KEY `id_customer` (`id_customer`),   KEY `id_user` (`id_user`),   CONSTRAINT `tb_penjualan_ibfk_1` FOREIGN KEY (`id_customer`)      REFERENCES `tb_customer` (`id_customer`),   CONSTRAINT `tb_penjualan_ibfk_2` FOREIGN KEY (`id_user`)      REFERENCES `tb_user` (`id_user`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;  -- 7. Membuat Tabel Detail Penjualan (Item Belanja) CREATE TABLE `tb_detail_penjualan` (   `id_detail` int(11) NOT NULL AUTO_INCREMENT,   `id_jual` int(11) NOT NULL,   `id_barang` varchar(10) NOT NULL,   `harga_satuan` double NOT NULL,   `jumlah_beli` int(11) NOT NULL,   `subtotal` double NOT NULL,   PRIMARY KEY (`id_detail`),   KEY `id_jual` (`id_jual`),   KEY `id_barang` (`id_barang`),   CONSTRAINT `tb_detail_penjualan_ibfk_1` FOREIGN KEY (`id_jual`)      REFERENCES `tb_penjualan` (`id_jual`),   CONSTRAINT `tb_detail_penjualan_ibfk_2` FOREIGN KEY (`id_barang`)      REFERENCES `tb_barang` (`id_barang`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"]
+
+Table 4 (Rows: 3, Cols: 1):
+  Row 0: ['Nama Modul : Form Login Deskripsi  : Deskripsikan isi dan Fungsi dari Kode Sumber']
+  Row 1: ['']
+  Row 2: ['Hasil:']
+
+Table 5 (Rows: 7, Cols: 3):
+  Row 0: ['Kelas Uji', 'Butir uji', 'Jenis Pengujian']
+  Row 1: ['Login', 'Verifikasi masuk', 'Black box']
+  Row 2: ['Pengaturan login', 'Validasi password lama', 'Black box']
+  Row 3: ['Pengaturan login', 'Ganti password', '']
+  Row 4: ['Pendaftaran Pengguna', 'Tambah data pengguna', 'Black box']
+  Row 5: ['Pendaftaran Pengguna', 'Ubah data pengguna', '']
+  Row 6: ['Setting koneksi database', 'Simpan setting koneksi', 'Black box']
+
+Table 6 (Rows: 11, Cols: 2):
+  Row 0: ['Deskripsi: Pengujian Form Login Prosedur: Memasukkan  Username dan Password pada field yang tersedia Data Masukkan : Username dan Password', 'Deskripsi: Pengujian Form Login Prosedur: Memasukkan  Username dan Password pada field yang tersedia Data Masukkan : Username dan Password']
+  Row 1: ['Kasus dan hasil uji ( data Normal )', 'Kasus dan hasil uji ( data Normal )']
+  Row 2: ['Keluaran yang diharapkan', 'Data login dimasukkan, isi username dan isi password lalu klik tombol login maka dilakukan proses pengecekan data login. Apabila data login benar maka masuk ke menu masing-masing pengguna']
+  Row 3: ['Kriteria Evaluasi', 'Dapat mengisi data login sesuai dengan yang diharapkan.']
+  Row 4: ['Hasil', 'Sukses']
+  Row 5: ['kesimpulan', 'Diterima']
+  Row 6: ['Kasus dan hasil uji ( data salah )', 'Kasus dan hasil uji ( data salah )']
+  Row 7: ['Keluaran yang diharapkan', 'Data login tidak terdaftar dan menampilkan pesan Kesalahan']
+  Row 8: ['Kriteria Evaluasi', 'User tidak bisa melakukan login, menapilkan pesan, sesuai dengan yang diharapkan']
+  Row 9: ['Hasil', 'Sukses']
+  Row 10: ['kesimpulan', 'Diterima']

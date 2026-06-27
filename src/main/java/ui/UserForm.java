@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
+import util.ValidationUtil;
 import ui.components.RoundedPanel;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -20,7 +21,7 @@ public class UserForm extends JPanel {
     private JTextField txtId, txtUsername, txtNamaLengkap;
     private JPasswordField txtPassword;
     private JComboBox<String> cbRole;
-    private JButton btnSimpan, btnUbah, btnHapus, btnClear;
+    private JButton btnSimpan, btnHapus, btnClear;
     private JTable table;
     private DefaultTableModel tableModel;
     private UserService service;
@@ -59,18 +60,21 @@ public class UserForm extends JPanel {
         addLabel(panelInput, "Username:", gbc);
         txtUsername = new JTextField(20);
         ThemeUtil.styleTextField(txtUsername);
+        ValidationUtil.addRequiredValidation(txtUsername);
         gbc.gridx = 1; panelInput.add(txtUsername, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2;
         addLabel(panelInput, "Password:", gbc);
         txtPassword = new JPasswordField(20);
         ThemeUtil.stylePasswordField(txtPassword);
+        ValidationUtil.addRequiredValidation(txtPassword);
         gbc.gridx = 1; panelInput.add(txtPassword, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3;
         addLabel(panelInput, "Nama Lengkap:", gbc);
         txtNamaLengkap = new JTextField(20);
         ThemeUtil.styleTextField(txtNamaLengkap);
+        ValidationUtil.addAlphabetValidation(txtNamaLengkap);
         gbc.gridx = 1; panelInput.add(txtNamaLengkap, gbc);
 
         gbc.gridx = 0; gbc.gridy = 4;
@@ -82,11 +86,12 @@ public class UserForm extends JPanel {
         JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panelBtn.setOpaque(false);
         btnSimpan = new JButton("Simpan"); ThemeUtil.styleButton(btnSimpan, ThemeUtil.SUCCESS_COLOR);
-        btnUbah = new JButton("Ubah"); ThemeUtil.styleButton(btnUbah, ThemeUtil.OCEAN_BLUE);
         btnHapus = new JButton("Hapus"); ThemeUtil.styleButton(btnHapus, ThemeUtil.ERROR_COLOR);
         btnClear = new JButton("Clear"); ThemeUtil.styleButton(btnClear, ThemeUtil.TEXT_SECONDARY);
 
-        panelBtn.add(btnSimpan); panelBtn.add(btnUbah); panelBtn.add(btnHapus); panelBtn.add(btnClear);
+        panelBtn.add(btnSimpan);
+        panelBtn.add(btnHapus);
+        panelBtn.add(btnClear);
 
         panelTop.add(panelInput, BorderLayout.WEST);
         panelTop.add(panelBtn, BorderLayout.SOUTH);
@@ -103,18 +108,49 @@ public class UserForm extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         ThemeUtil.styleTable(table, scrollPane);
 
+        // Search Panel
+        JPanel panelSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        panelSearch.setOpaque(false);
+        
+        JLabel lblFilter = new JLabel("Filter Role:");
+        lblFilter.setFont(ThemeUtil.FONT_REGULAR);
+        JComboBox<String> cbFilterRole = new JComboBox<>(new String[]{"Semua Role", "Admin", "Kasir"});
+        ThemeUtil.styleComboBox(cbFilterRole);
+
+        JLabel lblSearch = new JLabel("Cari:");
+        lblSearch.setFont(ThemeUtil.FONT_REGULAR);
+        JTextField txtSearch = new JTextField(15);
+        ThemeUtil.styleTextField(txtSearch);
+
+        panelSearch.add(lblFilter);
+        panelSearch.add(cbFilterRole);
+        panelSearch.add(lblSearch);
+        panelSearch.add(txtSearch);
+
+        panelBottom.add(panelSearch, BorderLayout.NORTH);
         panelBottom.add(scrollPane, BorderLayout.CENTER);
         add(panelBottom, BorderLayout.CENTER);
 
+        // Search Events
+        Runnable doSearch = () -> {
+            loadData(txtSearch.getText(), cbFilterRole.getSelectedItem().toString());
+        };
+
+        cbFilterRole.addActionListener(e -> doSearch.run());
+
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { doSearch.run(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { doSearch.run(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { doSearch.run(); }
+        });
+
         // Events
         btnSimpan.addActionListener(e -> simpanData());
-        btnUbah.addActionListener(e -> ubahData());
         btnHapus.addActionListener(e -> hapusData());
         btnClear.addActionListener(e -> clear());
 
         ActionListener enterSubmit = e -> {
-            if (table.getSelectedRow() >= 0) btnUbah.doClick();
-            else btnSimpan.doClick();
+            btnSimpan.doClick();
         };
         txtUsername.addActionListener(enterSubmit);
         txtPassword.addActionListener(enterSubmit);
@@ -141,15 +177,19 @@ public class UserForm extends JPanel {
         p.add(lbl, gbc);
     }
 
-    private void loadData() {
+    public void loadData() {
+        loadData("", "Semua Role");
+    }
+
+    private void loadData(String keyword, String filterRole) {
         tableModel.setRowCount(0);
-        List<User> list = service.getAllUser();
+        List<User> list = service.searchUser(keyword, filterRole);
         for (User u : list) {
             tableModel.addRow(new Object[]{u.getIdUser(), u.getUsername(), u.getNamaLengkap(), u.getLevel()});
         }
     }
 
-    private void clear() {
+    public void clear() {
         txtId.setText(service.getNextAutoIncrement());
         txtUsername.setText("");
         txtPassword.setText("");
@@ -159,7 +199,9 @@ public class UserForm extends JPanel {
     }
 
     private void simpanData() {
-        if (txtUsername.getText().trim().isEmpty() || new String(txtPassword.getPassword()).trim().isEmpty()) {
+        boolean isUpdate = table.getSelectedRow() >= 0;
+
+        if (txtUsername.getText().trim().isEmpty() || (!isUpdate && new String(txtPassword.getPassword()).trim().isEmpty())) {
             Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Username dan Password tidak boleh kosong");
             return;
         }
@@ -167,58 +209,53 @@ public class UserForm extends JPanel {
         String passwordInput = new String(txtPassword.getPassword());
 
         User u = new User();
-        u.setUsername(txtUsername.getText().trim());
-        u.setPassword(passwordInput);
-        u.setNamaLengkap(txtNamaLengkap.getText().trim());
-        u.setLevel(cbRole.getSelectedItem().toString());
-        
-        if (service.tambahUser(u)) {
-            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "User disimpan");
-            loadData();
-            clear();
-        } else {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan user");
-        }
-    }
-
-    private void ubahData() {
-        if (table.getSelectedRow() < 0) {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Pilih data!");
-            return;
-        }
-
-        String passwordInput = new String(txtPassword.getPassword());
-        User u = new User();
-        try {
-            u.setIdUser(Integer.parseInt(txtId.getText()));
-        } catch (NumberFormatException e) {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "ID User tidak valid");
-            return;
-        }
-        
-        u.setUsername(txtUsername.getText().trim());
-        u.setNamaLengkap(txtNamaLengkap.getText().trim());
-        u.setLevel(cbRole.getSelectedItem().toString());
-
-        if (!passwordInput.isEmpty()) {
-            u.setPassword(passwordInput);
-        } else {
-            // retain old password
-            List<User> users = service.getAllUser();
-            for(User old : users) {
-                if(old.getIdUser() == u.getIdUser()) {
-                    u.setPassword(old.getPassword());
-                    break;
-                }
+        if (isUpdate) {
+            try {
+                u.setIdUser(Integer.parseInt(txtId.getText()));
+            } catch (NumberFormatException e) {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "ID User tidak valid");
+                return;
             }
         }
+        
+        u.setUsername(txtUsername.getText().trim());
+        u.setNamaLengkap(txtNamaLengkap.getText().trim());
+        u.setLevel(cbRole.getSelectedItem().toString());
+        
+        if (isUpdate) {
+            if (!passwordInput.isEmpty()) {
+                u.setPassword(passwordInput);
+            } else {
+                // Jika password kosong, tidak mengubah password lama
+                User old = null;
+                List<User> users = service.searchUser("", "Semua Role");
+                for(User userOld : users) {
+                    if(userOld.getIdUser() == u.getIdUser()) {
+                        old = userOld;
+                        break;
+                    }
+                }
+                if (old != null) {
+                    u.setPassword(old.getPassword());
+                }
+            }
 
-        if (service.updateUser(u)) {
-            Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "User diubah");
-            loadData();
-            clear();
+            if (service.updateUser(u)) {
+                Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "User diupdate");
+                loadData();
+                clear();
+            } else {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengupdate user");
+            }
         } else {
-            Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal mengubah user");
+            u.setPassword(passwordInput);
+            if (service.tambahUser(u)) {
+                Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "User disimpan");
+                loadData();
+                clear();
+            } else {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan user");
+            }
         }
     }
 

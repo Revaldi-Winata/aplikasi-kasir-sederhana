@@ -39,6 +39,31 @@ public class CustomerService {
         return list;
     }
 
+    public List<Customer> searchCustomer(String keyword) {
+        List<Customer> list = new ArrayList<>();
+        String sql = "SELECT * FROM tb_customer WHERE nama_customer LIKE ? OR id_customer LIKE ? OR alamat LIKE ? ORDER BY id_customer";
+        try (Connection conn = Koneksi.getKoneksi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            String kw = "%" + keyword + "%";
+            ps.setString(1, kw);
+            ps.setString(2, kw);
+            ps.setString(3, kw);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Customer c = new Customer();
+                    c.setIdCustomer(rs.getString("id_customer"));
+                    c.setNamaCustomer(rs.getString("nama_customer"));
+                    c.setAlamat(rs.getString("alamat"));
+                    c.setTelepon(rs.getString("telepon"));
+                    list.add(c);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean tambahCustomer(Customer c) {
         String sql = "INSERT INTO tb_customer (id_customer, nama_customer, alamat, telepon) VALUES (?,?,?,?)";
         try (Connection conn = Koneksi.getKoneksi();

@@ -14,6 +14,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import util.ThemeUtil;
+import util.ValidationUtil;
 import ui.components.RoundedPanel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -86,12 +87,14 @@ public class PenjualanForm extends JPanel {
         gbc.gridx = 0; gbc.gridy = 2;
         addLabel(panelInput, "Customer:", gbc);
         cbCustomer = new JComboBox<>();
+        util.AutoCompletion.enable(cbCustomer);
         ThemeUtil.styleComboBox(cbCustomer);
         gbc.gridx = 1; panelInput.add(cbCustomer, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3;
         addLabel(panelInput, "Barang:", gbc);
         cbBarang = new JComboBox<>();
+        util.AutoCompletion.enable(cbBarang);
         ThemeUtil.styleComboBox(cbBarang);
         gbc.gridx = 1; panelInput.add(cbBarang, gbc);
 
@@ -99,6 +102,8 @@ public class PenjualanForm extends JPanel {
         addLabel(panelInput, "Qty:", gbc);
         txtQty = new JTextField(15);
         ThemeUtil.styleTextField(txtQty);
+        ThemeUtil.makeNumberOnly(txtQty);
+        ValidationUtil.addNumericValidation(txtQty);
         gbc.gridx = 1; panelInput.add(txtQty, gbc);
 
         btnTambah = new JButton("Tambah ke Keranjang");
@@ -137,6 +142,8 @@ public class PenjualanForm extends JPanel {
         addLabel(panelBayar, "Bayar:", gbcB);
         txtBayar = new JTextField(15);
         ThemeUtil.styleTextField(txtBayar);
+        ThemeUtil.makeCurrencyField(txtBayar);
+        ValidationUtil.addNumericValidation(txtBayar);
         txtBayar.setFont(new Font("Segoe UI", Font.BOLD, 16));
         gbcB.gridx = 1; panelBayar.add(txtBayar, gbcB);
 
@@ -176,17 +183,25 @@ public class PenjualanForm extends JPanel {
 
         add(panelUtama, BorderLayout.CENTER);
 
-        // Events
-        btnTambah.addActionListener(e -> tambahKeKeranjang());
-        btnClear.addActionListener(e -> clearForm());
+        // ==========================================
+        // [Mekanisme Tombol & Keyboard] (EVENT LISTENERS)
+        // ==========================================
 
+        // [Aksi Tombol]
+        btnTambah.addActionListener(e -> tambahKeKeranjang()); // Masukkan barang ke tabel keranjang sementara
+        btnClear.addActionListener(e -> clearForm()); // Hapus semua isian di keranjang layar
+
+        // [Aksi Keyboard] Jika user tekan Enter di kotak input Jumlah/Qty, otomatis masuk ke keranjang
         txtQty.addActionListener(e -> btnTambah.doClick());
+        
+        // [Aksi Keyboard] Jika user tekan Enter di kotak Bayar, hitung kembalian dan langsung simpan ke Database
         txtBayar.addActionListener(e -> {
             hitungKembali();
             btnSimpan.doClick();
         });
-        btnSimpan.addActionListener(e -> simpanTransaksi());
+        btnSimpan.addActionListener(e -> simpanTransaksi()); // Tombol Simpan ditekan pakai mouse
 
+        // [Event Real-Time] Setiap kali ada ketikan baru atau huruf dihapus di kotak "Bayar", kembalian langsung dihitung
         txtBayar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { hitungKembali(); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { hitungKembali(); }
@@ -219,19 +234,21 @@ public class PenjualanForm extends JPanel {
         refreshTabel();
     }
 
-    private void clearForm() {
-        txtIdTrans.setText(penjualanService.getPreviewNoFaktur()); 
+    // [Logika UI] Kosongkan layar untuk transaksi kasir baru
+    public void clearForm() {
+        txtIdTrans.setText(penjualanService.getPreviewNoFaktur()); // Buat nomor struk sementara (misal TRX005)
         txtQty.setText("");
         txtTotal.setText("0");
         txtBayar.setText("");
         txtKembali.setText("0");
-        keranjang.clear();
-        refreshTabel();
+        keranjang.clear(); // Bersihkan memori keranjang Java
+        refreshTabel(); // Segarkan tampilan tabel agar kosong
     }
 
+    // [Logika UI] Merangkai ulang isi tabel keranjang berdasarkan isi List keranjang di memori Java
     private void refreshTabel() {
         modelKeranjang.setRowCount(0);
-        grandTotal = 0;
+        grandTotal = 0; // Mulai hitung total harga belanja dari nol lagi
         for (DetailPenjualan detail : keranjang) {
             modelKeranjang.addRow(new Object[]{
                     detail.getIdBarang(),
@@ -240,9 +257,9 @@ public class PenjualanForm extends JPanel {
                     detail.getJumlahBeli(),
                     util.Formatter.formatRupiah(detail.getSubtotal())
             });
-            grandTotal += detail.getSubtotal();
+            grandTotal += detail.getSubtotal(); // Tambah harga barang ini ke total belanja keseluruhan
         }
-        txtTotal.setText(util.Formatter.formatRupiah(grandTotal));
+        txtTotal.setText(util.Formatter.formatRupiah(grandTotal)); // Tampilkan total harga ke layar
         txtBayar.setText("");
         txtKembali.setText("");
     }
@@ -254,35 +271,47 @@ public class PenjualanForm extends JPanel {
         return "-";
     }
 
+    // [Logika Utama] Memasukkan barang dari pilihan dropdown ke tabel keranjang (belum masuk database)
     private void tambahKeKeranjang() {
-        if (cbBarang.getSelectedIndex() < 0) return;
+        if (cbBarang.getSelectedIndex() < 0) return; // Jika blm pilih barang, jangan lakukan apa-apa
         try {
             int qty = Integer.parseInt(txtQty.getText().trim());
-            if (qty <= 0) {
+            if (qty <= 0) { // Validasi dasar
                 Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Qty harus lebih besar dari 0");
                 return;
             }
 
             Barang b = listBarang.get(cbBarang.getSelectedIndex());
-            if (b.getStok() < qty) {
+            if (b.getStok() < qty) { // Validasi stok awal
                 Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Stok tidak mencukupi!");
                 return;
             }
 
-            // Cek jika sudah ada di keranjang
-            boolean found = false;
+            // [Mekanisme] Mengecek apakah barang ini sebelumnya sudah dimasukkan ke keranjang?
+            // Jika sudah ada, jangan buat baris baru, cukup tambahkan saja jumlah belinya
+            int totalDiminta = qty;
+            DetailPenjualan existingDetail = null;
             for (DetailPenjualan pd : keranjang) {
                 if (pd.getIdBarang().equals(b.getIdBarang())) {
-                    pd.setJumlahBeli(pd.getJumlahBeli() + qty);
-                    pd.setSubtotal(pd.getJumlahBeli() * pd.getHargaSatuan());
-                    found = true;
+                    totalDiminta += pd.getJumlahBeli(); // Tambahkan qty lama dengan qty baru
+                    existingDetail = pd;
                     break;
                 }
             }
 
-            if (!found) {
+            // [Validasi Lanjut] Cek stok lagi terhadap akumulasi permintaan
+            if (b.getStok() < totalDiminta) {
+                Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Total permintaan (" + totalDiminta + ") melebihi sisa stok (" + b.getStok() + ")!");
+                return;
+            }
+
+            if (existingDetail != null) {
+                // Barang sudah ada di keranjang, perbarui kuantitas dan harga (subtotal)
+                existingDetail.setJumlahBeli(totalDiminta);
+                existingDetail.setSubtotal(existingDetail.getJumlahBeli() * existingDetail.getHargaSatuan());
+            } else {
+                // Barang belum ada, masukkan sebagai baris baru di keranjang
                 DetailPenjualan pd = new DetailPenjualan();
-                // pd.setIdJual(...) will be set by the service
                 pd.setIdBarang(b.getIdBarang());
                 pd.setHargaSatuan(b.getHargaJual());
                 pd.setJumlahBeli(qty);
@@ -290,17 +319,18 @@ public class PenjualanForm extends JPanel {
                 keranjang.add(pd);
             }
 
-            txtQty.setText("");
-            refreshTabel();
+            txtQty.setText(""); // Kosongkan input jumlah agar siap tambah barang lain
+            refreshTabel(); // Tampilkan kembali tabel keranjangnya
 
         } catch (NumberFormatException e) {
             Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Qty harus angka!");
         }
     }
 
+    // [Logika UI] Mengkalkulasi uang kembalian pembeli secara langsung
     private void hitungKembali() {
         try {
-            double bayar = Double.parseDouble(txtBayar.getText().trim());
+            double bayar = util.Formatter.parseCurrencySafe(txtBayar.getText());
             double kembali = bayar - grandTotal;
             txtKembali.setText(util.Formatter.formatRupiah(kembali));
         } catch (Exception e) {
@@ -308,6 +338,7 @@ public class PenjualanForm extends JPanel {
         }
     }
 
+    // [Logika Utama] Mengeksekusi simpan transaksi keseluruhan secara permanen ke Database (MySQL)
     private void simpanTransaksi() {
         if (keranjang.isEmpty()) {
             Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Keranjang masih kosong!");
@@ -319,25 +350,30 @@ public class PenjualanForm extends JPanel {
         }
 
         try {
-            double bayar = Double.parseDouble(txtBayar.getText().trim());
-            if (bayar < grandTotal) {
+            double bayar = util.Formatter.parseCurrencySafe(txtBayar.getText());
+            if (bayar < grandTotal) { // Mencegah proses jika uang yang diberikan kurang
                 Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Uang bayar kurang!");
                 return;
             }
 
             Customer c = listCustomer.get(cbCustomer.getSelectedIndex());
 
+            // [Mekanisme] Bungkus semua informasi nota menjadi object "Penjualan"
             Penjualan p = new Penjualan();
             p.setNoFaktur(txtIdTrans.getText());
             p.setTglTransaksi(new java.sql.Date(new Date().getTime()));
             p.setIdCustomer(c.getIdCustomer());
             p.setIdUser(currentUser != null ? currentUser.getIdUser() : 1);
             p.setTotalBayar(grandTotal);
+            // Pasangkan list barang yang tadi dibeli ke dalam nota penjualan ini
             p.setDetails(keranjang);
 
+            // [Logika Database] Kirim nota (beserta isi keranjangnya) ke service untuk disimpan ke SQL
+            // Jika berhasil, sistem akan otomatis mengurangi stok barang yang dibeli di dalam fungsi ini
             if (penjualanService.simpanTransaksi(p)) {
                 Toast.showSuccess((JFrame) SwingUtilities.getWindowAncestor(this), "Transaksi Berhasil Disimpan!");
                 
+                // [Logika Cetak] Menawarkan untuk mencetak nota pembelian berupa file PDF
                 int confirm = JOptionPane.showConfirmDialog(this, "Apakah Anda ingin melihat pratinjau dan menyimpan faktur?", "Cetak Faktur", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     service.LogTransaksiService logService = new service.LogTransaksiService();
@@ -360,8 +396,8 @@ public class PenjualanForm extends JPanel {
                     }
                 }
                 
-                clearForm();
-                loadCombo(); // refresh stok combo
+                clearForm(); // Bersihkan layar form untuk pembeli selanjutnya
+                loadCombo(); // Refresh daftar stok barang (karena sudah berkurang pasca beli)
             } else {
                 Toast.showError((JFrame) SwingUtilities.getWindowAncestor(this), "Gagal menyimpan transaksi!");
             }
