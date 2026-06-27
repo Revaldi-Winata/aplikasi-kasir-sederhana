@@ -52,3 +52,11 @@ Thumbs.db
 
 # App specific - Abaikan folder faktur PDF yang ter-generate otomatis saat runtime
 invoices/
+
+# Dokumentasi & File Laporan Kuliah
+Revaldi Winata_231011401910.pdf
+Templete-Dokumentasi Program dan testing.docx
+TokoBerkahJaya-Dokumentasi.docx
+msoFD8C.tmp
+doc_workspace/
+docs/
